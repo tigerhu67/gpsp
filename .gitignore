@@ -1,7 +1,9 @@
 *.o
 *.u
 *.z
+*.gcda
 gpsp.gpe
 tags
 cscope.out
 pandora/linux
+bittboy/gpsp

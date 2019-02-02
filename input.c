@@ -21,6 +21,8 @@
 
 // Special thanks to psp298 for the analog->dpad code!
 
+extern uint16_t io_registers[1024 * 16];
+
 void trigger_key(u32 key)
 {
   u32 p1_cnt = io_registers[REG_P1CNT];
@@ -606,7 +608,7 @@ u32 key_map(SDLKey key_sym)
     case SDLK_LSHIFT:
       return BUTTON_L;
 
-    case SDLK_x:
+    case SDLK_SPACE:
       return BUTTON_R;
 
     case SDLK_DOWN:
@@ -624,7 +626,7 @@ u32 key_map(SDLKey key_sym)
     case SDLK_RETURN:
       return BUTTON_START;
 
-    case SDLK_RSHIFT:
+    case SDLK_RCTRL:
       return BUTTON_SELECT;
 
     case SDLK_LCTRL:
@@ -706,10 +708,11 @@ gui_action_type get_gui_input()
             break;
 
           case SDLK_RETURN:
+          case SDLK_LCTRL:
             gui_action = CURSOR_SELECT;
             break;
 
-          case SDLK_BACKSPACE:
+          case SDLK_LALT:
             gui_action = CURSOR_BACK;
             break;
 	 default:
@@ -761,22 +764,26 @@ gui_action_type get_gui_input()
 u32 update_input()
 {
   SDL_Event event;
-
+  
+  io_registers[REG_P1] = (~key) & 0x3FF;
+  
   while(SDL_PollEvent(&event))
   {
     switch(event.type)
     {
       case SDL_QUIT:
+		{
         quit();
-
+		}
       case SDL_KEYDOWN:
       {
-        if(event.key.keysym.sym == SDLK_ESCAPE)
+		  /* Disable Exiting for the bittboy, we will quit from the menu instead */
+        /*if(event.key.keysym.sym == SDLK_ESCAPE)
         {
           quit();
-        }
+        }*/
 #ifdef PC_BUILD
-        if(event.key.keysym.sym == SDLK_BACKSPACE)
+        if(event.key.keysym.sym == SDLK_RCTRL)
 #else
         if(event.key.keysym.sym == SDLK_F10)
 #endif
@@ -862,39 +869,10 @@ u32 update_input()
         key &= ~(key_map(event.key.keysym.sym));
         break;
       }
-
-      case SDL_JOYBUTTONDOWN:
-      {
-        key |= joy_map(event.jbutton.button);
-        trigger_key(key);
-        break;
-      }
-
-      case SDL_JOYBUTTONUP:
-      {
-        key &= ~(joy_map(event.jbutton.button));
-        break;
-      }
-#ifdef RPI_BUILD
-      case SDL_JOYAXISMOTION:
-      {
-         if (event.jaxis.axis==0) { //Left-Right
-            key &= ~(BUTTON_LEFT|BUTTON_RIGHT);
-         if (event.jaxis.value < -3200)  key |= BUTTON_LEFT;
-           else if (event.jaxis.value > 3200)  key |= BUTTON_RIGHT;
-       } 
-         if (event.jaxis.axis==1) {  //Up-Down
-            key &= ~(BUTTON_UP|BUTTON_DOWN);
-         if (event.jaxis.value < -3200)  key |= BUTTON_UP;
-           else if (event.jaxis.value > 3200)  key |= BUTTON_DOWN;
-       }
-       break;
-#endif
-      }
     }
   }
 
-  io_registers[REG_P1] = (~key) & 0x3FF;
+
 
   return 0;
 }

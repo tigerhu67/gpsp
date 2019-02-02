@@ -1,3 +1,9 @@
+Here's a simple port of GPSP for the new Bittboy.
+Seems to work fine right now, apart from the R button.
+No idea to what it is mapped to ?
+
+========
+
 -- gameplaySP  Gameboy Advance emulator for Playstation Portable --
 
 

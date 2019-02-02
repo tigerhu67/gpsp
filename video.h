@@ -75,19 +75,14 @@ typedef struct
   bitmap_render_function normal_render;
 } bitmap_layer_render_struct;
 
+
+
 typedef enum
 {
   unscaled,
   scaled_aspect,
-#ifdef POLLUX_BUILD
-  unscaled_rot,
-  scaled_aspect_rot,
-#elif defined(GP2X_BUILD)
   fullscreen,
   scaled_aspect_sw,
-#else
-  fullscreen,
-#endif
 } video_scale_type;
 
 typedef enum

@@ -769,7 +769,7 @@ static const char *scale_options[] =
 #elif defined(RPI_BUILD)
   "fullscreen"
 #else
-  "unscaled 3:2"
+  "unscaled 3:2", "scaled 3:2", "fullscreen"
 #endif
 };
 
@@ -1653,7 +1653,7 @@ u32 menu(u16 *original_screen)
     clear_screen(COLOR_BG);
 
 #ifndef GP2X_BUILD
-    blit_to_screen(original_screen, 240, 160, 230, 40);
+    //blit_to_screen(original_screen, 240, 160, 80, 40);
 #endif
 
     current_menu = new_menu;

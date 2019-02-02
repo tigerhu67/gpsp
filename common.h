@@ -31,6 +31,10 @@
   #define PATH_SEPARATOR_CHAR '/'
 #endif
 
+#define prefetch(a,b)   __builtin_prefetch(a,b)
+#define likely(x)       __builtin_expect((x),1)
+#define unlikely(x)     __builtin_expect((x),0)
+
 // These includes must be used before SDL is included.
 #ifdef ARM_ARCH
 
