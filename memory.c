@@ -20,6 +20,8 @@
 #define IN_MEMORY_C
 #include "common.h"
 
+static uint8_t IsNintendoBIOS = 0;
+
 // This table is configured for sequential access on system defaults
 
 u32 waitstate_cycles_sequential[16][3] =
@@ -2017,8 +2019,11 @@ s32 load_game_config(char *gamepak_title, char *gamepak_code, char *gamepak_make
 
   idle_loop_target_pc = 0xFFFFFFFF;
   iwram_stack_optimize = 1;
-  bios_rom[0x39] = 0x00;
-  bios_rom[0x2C] = 0x00;
+  if (IsNintendoBIOS)
+  {
+	bios_rom[0x39] = 0x00;
+	bios_rom[0x2C] = 0x00;
+  }
   translation_gate_targets = 0;
   flash_device_id = FLASH_DEVICE_MACRONIX_64KB;
 
@@ -2088,13 +2093,13 @@ s32 load_game_config(char *gamepak_title, char *gamepak_code, char *gamepak_make
             }
 
             if(!strcmp(current_variable, "bios_rom_hack_39") &&
-              !strcmp(current_value, "yes"))
+              !strcmp(current_value, "yes")  && IsNintendoBIOS)
             {
               bios_rom[0x39] = 0xC0;
             }
 
             if(!strcmp(current_variable, "bios_rom_hack_2C") &&
-              !strcmp(current_value, "yes"))
+              !strcmp(current_value, "yes")  && IsNintendoBIOS)
             {
                bios_rom[0x2C] = 0x02;
             }
@@ -2212,21 +2217,30 @@ u32 load_gamepak(char *name)
   return -1;
 }
 
+uint8_t nintendo_bios_sha1[] = {
+	0x30, 0x0c, 0x20, 0xdf, 0x67, 0x31, 0xa3, 0x39, 0x52, 0xde,
+	0xd8, 0xc4, 0x36, 0xf7, 0xf1, 0x86, 0xd2, 0x5d, 0x34, 0x92,
+};
+
 s32 load_bios(char *name)
 {
-  file_open(bios_file, name, read);
+	file_open(bios_file, name, read);
 
-  if(file_check_valid(bios_file))
-  {
-    file_read(bios_file, bios_rom, 0x4000);
+	if(file_check_valid(bios_file))
+	{
+		file_read(bios_file, bios_rom, 0x4000);
+		file_close(bios_file);
 
-    // This is a hack to get Zelda working, because emulating
-    // the proper memory read behavior here is much too expensive.
-    file_close(bios_file);
-    return 0;
-  }
+		sha1nfo sha1;
+		sha1_init(&sha1);
+		sha1_write(&sha1, bios_rom, 0x4000);
+		uint8_t* digest = sha1_result(&sha1);
+		IsNintendoBIOS = memcmp(digest, nintendo_bios_sha1, SHA1_HASH_LENGTH) == 0;
 
-  return -1;
+		return 0;
+	}
+
+	return -1;
 }
 
 // DMA memory regions can be one of the following:
