@@ -16,12 +16,12 @@ BIN       = gpsp
 
 VPATH      += .. ../arm
 CFLAGS     += -DARM_ARCH -DPC_BUILD -Wall
-CFLAGS     += -Ofast -fdata-sections -ffunction-sections -fno-PIC -fprofile-use
+CFLAGS     += -O2 -fdata-sections -ffunction-sections -fno-PIC -fprofile-use
 CFLAGS     += `/opt/bittboy-toolchain/arm-miyoo-linux-musleabi/sysroot/usr/bin/sdl-config --cflags`
 
 # expecting to have PATH set up to get correct sdl-config first
 
-LIBS       += `sdl-config --libs`
+LIBS       += -lSDL
 LIBS       += -ldl -lpthread -lz -lgcov -lasound -Wl,--as-needed -Wl,--gc-sections -flto -s
 
 # Compilation:

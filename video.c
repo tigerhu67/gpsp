@@ -1909,7 +1909,7 @@ static const u32 obj_width_table[] =
 static const u32 obj_height_table[] =
   { 8, 16, 32, 64, 8, 8, 16, 32, 16, 32, 32, 64 };
 
-static u8 obj_priority_list[5][160][128];
+static FULLY_UNINITIALIZED(u8 obj_priority_list[5][160][128]);
 static u32 obj_priority_count[5][160];
 static u32 obj_alpha_count[160];
 

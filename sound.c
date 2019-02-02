@@ -194,8 +194,8 @@ s8 square_pattern_duty[4][8] =
 
 s8 wave_samples[64];
 
-u32 noise_table15[1024];
-u32 noise_table7[4];
+FULLY_UNINITIALIZED(u32 noise_table15[1024]);
+FULLY_UNINITIALIZED(u32 noise_table7[4]);
 
 u32 gbc_sound_master_volume_table[4] = { 1, 2, 4, 0 };
 

@@ -296,30 +296,6 @@ int main(int argc, char *argv[])
     quit();
   }
 
-  if(bios_rom[0] != 0x18)
-  {
-    gui_action_type gui_action = CURSOR_NONE;
-
-    debug_screen_start();
-    debug_screen_printl("You have an incorrect BIOS image.                 ");
-    debug_screen_printl("While many games will work fine, some will not. It");
-    debug_screen_printl("is strongly recommended that you obtain the       ");
-    debug_screen_printl("correct BIOS file. Do NOT report any bugs if you  ");
-    debug_screen_printl("are seeing this message.                          ");
-    debug_screen_printl("                                                  ");
-    debug_screen_printl("Press any button to resume, at your own risk.     ");
-
-    debug_screen_update();
-
-    while(gui_action == CURSOR_NONE)
-    {
-      gui_action = get_gui_input();
-      delay_us(15000);
-    }
-
-    debug_screen_end();
-  }
-
   init_main();
   init_sound(1);
 

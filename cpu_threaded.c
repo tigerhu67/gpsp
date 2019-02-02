@@ -3069,8 +3069,8 @@ block_lookup_address_builder(dual);
 #define MAX_BLOCK_SIZE 8192
 #define MAX_EXITS      256
 
-block_data_type block_data[MAX_BLOCK_SIZE];
-block_exit_type block_exits[MAX_EXITS];
+block_data_type FULLY_UNINITIALIZED(block_data[MAX_BLOCK_SIZE]);
+block_exit_type FULLY_UNINITIALIZED(block_exits[MAX_EXITS]);
 
 #define smc_write_arm_yes()                                                   \
   if(address32(pc_address_block, (block_end_pc & 0x7FFF) - 0x8000) == 0x0000) \

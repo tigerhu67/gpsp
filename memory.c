@@ -58,37 +58,38 @@ u32 gamepak_waitstate_sequential[2][3][3] =
   }
 };
 
-u16 palette_ram[512];
-u16 oam_ram[512];
-u16 palette_ram_converted[512];
-u16 io_registers[1024 * 16];
-u8 ewram[1024 * 256 * 2];
-u8 iwram[1024 * 32 * 2];
-u8 vram[1024 * 96 * 2];
 
-u8 bios_rom[1024 * 32];
-u32 bios_read_protect;
+FULLY_UNINITIALIZED(uint16_t palette_ram[0x200]);
+FULLY_UNINITIALIZED(uint16_t oam_ram[0x200]);
+FULLY_UNINITIALIZED(uint16_t palette_ram_converted[0x200]);
+FULLY_UNINITIALIZED(uint16_t io_registers[1024 * 16]);
+FULLY_UNINITIALIZED(uint8_t ewram[1024 * 256 * 2]);
+FULLY_UNINITIALIZED(uint8_t iwram[1024 * 32 * 2]);
+FULLY_UNINITIALIZED(uint8_t vram[1024 * 96 * 2]);
+
+FULLY_UNINITIALIZED(uint8_t bios_rom[1024 * 32]);
+uint32_t bios_read_protect;
 
 // Up to 128kb, store SRAM, flash ROM, or EEPROM here.
-u8 gamepak_backup[1024 * 128];
+uint8_t gamepak_backup[0x20000];
 
 // Keeps us knowing how much we have left.
-u8 *gamepak_rom;
-u32 gamepak_size;
+uint8_t *gamepak_rom;
+uint32_t gamepak_size;
 
 dma_transfer_type dma[4];
 
-u8 *memory_regions[16];
-u32 memory_limits[16];
+uint8_t *memory_regions[16];
+uint32_t memory_limits[16];
 
 typedef struct
 {
-  u32 page_timestamp;
-  u32 physical_index;
+  uint32_t page_timestamp;
+  uint32_t physical_index;
 } gamepak_swap_entry_type;
 
-u32 gamepak_ram_buffer_size;
-u32 gamepak_ram_pages;
+uint32_t gamepak_ram_buffer_size;
+uint32_t gamepak_ram_pages;
 
 // Enough to map the gamepak RAM space.
 gamepak_swap_entry_type *gamepak_memory_map;
@@ -861,35 +862,26 @@ cpu_alert_type function_cc write_io_register8(u32 address, u32 value)
       break;
 
     // Sound FIFO A
-    case 0xA0:
-      sound_timer_queue8(0, value);
+    case 0xA0 ... 0xA3:
+	  address8(io_registers, address) = value;
+      sound_timer_queue32(0, value);
       break;
 
     // Sound FIFO B
-    case 0xA4:
-      sound_timer_queue8(1, value);
+    case 0xA4 ... 0xA7:
+      address8(io_registers, address) = value;
+      sound_timer_queue32(1, value);
       break;
+
 
     // DMA control (trigger byte)
-    case 0xBB:
-      access_register8_low(0xBA);
-      trigger_dma(0);
-      break;
-
-    case 0xC7:
-      access_register8_low(0xC6);
-      trigger_dma(1);
-      break;
-
-    case 0xD3:
-      access_register8_low(0xD2);
-      trigger_dma(2);
-      break;
-
-    case 0xDF:
-      access_register8_low(0xDE);
-      trigger_dma(3);
-      break;
+    case 0xBB:  // DMA channel 0
+    case 0xC7:  // DMA channel 1
+    case 0xD3:  // DMA channel 2
+    case 0xDF:  // DMA channel 3
+      access_register8_high(address - 1);
+      trigger_dma((address - 0xBB) / 12);
+	break;
 
     // Timer counts
     case 0x100:
@@ -933,25 +925,28 @@ cpu_alert_type function_cc write_io_register8(u32 address, u32 value)
       break;
 
     // Timer control (trigger byte)
-    case 0x103:
-      access_register8_low(0x102);
-      trigger_timer(0);
+    case 0x103:  // Timer 0
+    case 0x107:  // Timer 1
+    case 0x10B:  // Timer 2
+    case 0x10F:  // Timer 3
+      access_register8_high(address - 1);
+      trigger_timer((address - 0x103) / 4);
+	break;
+
+	case 0x128:
+    case 0x129:
+    case 0x134:
+    case 0x135:
+    // P1
+    case 0x130:
+    case 0x131:
+      /* Read only */
       break;
 
-    case 0x107:
-      access_register8_low(0x106);
-      trigger_timer(1);
-      break;
-
-    case 0x10B:
-      access_register8_low(0x10A);
-      trigger_timer(2);
-      break;
-
-    case 0x10F:
-      access_register8_low(0x10E);
-      trigger_timer(3);
-      break;
+      // IE
+      case 0x200:
+        address8(io_registers, 0x200) = value;
+        break;
 
     // IF
     case 0x202:
@@ -1130,68 +1125,54 @@ cpu_alert_type function_cc write_io_register16(u32 address, u32 value)
 
     // Sound FIFO A
     case 0xA0:
-      sound_timer_queue16(0, value);
+    case 0xA2:
+      address16(io_registers, address) = value;
+      sound_timer_queue32(0, value);
       break;
 
     // Sound FIFO B
     case 0xA4:
-      sound_timer_queue16(1, value);
+    case 0xA6:
+      address16(io_registers, address) = value;
+      sound_timer_queue32(1, value);
       break;
 
     // DMA control
-    case 0xBA:
-      trigger_dma(0);
-      break;
-
-    case 0xC6:
-      trigger_dma(1);
-      break;
-
-    case 0xD2:
-      trigger_dma(2);
-      break;
-
-    case 0xDE:
-      trigger_dma(3);
-      break;
+    case 0xBA:  // DMA channel 0
+    case 0xC6:  // DMA channel 1
+    case 0xD2:  // DMA channel 2
+    case 0xDE:  // DMA channel 3
+      trigger_dma((address - 0xBA) / 12);
+	break;
 
     // Timer counts
     case 0x100:
-      count_timer(0);
-      break;
-
     case 0x104:
-      count_timer(1);
-      break;
-
     case 0x108:
-      count_timer(2);
-      break;
-
     case 0x10C:
-      count_timer(3);
-      break;
+      count_timer((address - 0x100) / 4);
+	break;
 
     // Timer control
-    case 0x102:
-      trigger_timer(0);
-      break;
+    case 0x102:  // Timer 0
+    case 0x106:  // Timer 1
+    case 0x10A:  // Timer 2
+    case 0x10E:  // Timer 3
+      trigger_timer((address - 0x102) / 4);
+	break;
 
-    case 0x106:
-      trigger_timer(1);
-      break;
-
-    case 0x10A:
-      trigger_timer(2);
-      break;
-
-    case 0x10E:
-      trigger_timer(3);
-      break;
+    case 0x128:
+      address16(io_registers, 0x128) |= 0x0C;
+	break;
 
     // P1
     case 0x130:
       break;
+
+    // IE
+    case 0x200:
+      address16(io_registers, 0x200) = value;
+	break;
 
     // Interrupt flag
     case 0x202:
@@ -3173,7 +3154,7 @@ void load_state(char *savestate_filename)
 
     file_close(savestate_file);
 
-    flush_translation_cache_ram();
+	flush_translation_cache_ram();
     flush_translation_cache_rom();
     flush_translation_cache_bios();
 
@@ -3222,7 +3203,8 @@ void load_state(char *savestate_filename)
   }
 }
 
-u8 savestate_write_buffer[506947];
+
+FULLY_UNINITIALIZED(u8 savestate_write_buffer[506947] __attribute__ ((aligned (4))));
 u8 *write_mem_ptr;
 
 void save_state(char *savestate_filename, u16 *screen_capture)

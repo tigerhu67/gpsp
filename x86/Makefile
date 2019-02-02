@@ -9,7 +9,7 @@ AS        = as
 
 PREFIX    = /usr
 OBJS      = main.o cpu.o memory.o video.o input.o sound.o \
-	    cpu_threaded.o gui.o x86_stub.o cheats.o zip.o
+	    cpu_threaded.o gui.o x86_stub.o cheats.o zip.o sha1.o
 BIN       ?= gpsp 
 
 # Platform specific definitions 

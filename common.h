@@ -279,4 +279,7 @@ typedef u32 fixed8_24;
   #include "raspberrypi/rpi.h"
 #endif
 
+#define FULLY_UNINITIALIZED(declarator) declarator __attribute__((section(".noinit")))
+
+
 #endif

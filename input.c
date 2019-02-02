@@ -626,14 +626,14 @@ u32 key_map(SDLKey key_sym)
     case SDLK_RETURN:
       return BUTTON_START;
 
-    case SDLK_RCTRL:
+    case SDLK_ESCAPE:
       return BUTTON_SELECT;
 
     case SDLK_LCTRL:
-      return BUTTON_B;
+      return BUTTON_A;
 
     case SDLK_LALT:
-      return BUTTON_A;
+      return BUTTON_B;
 
     default:
       return BUTTON_NONE;

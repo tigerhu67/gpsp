@@ -266,7 +266,8 @@ void process_cheat_gs3(cheat_type *cheat)
         {
           case 0x0:
           {
-            u32 iterations = value >> 24;
+			  /* Was 24 before. According to https://github.com/phoe-nix/TempGBA4PSP-mod/commit/e7885c30a117b9dde7ffdb9f199df44c5b1fbcb9, this fixes GS3 cheats */
+            u32 iterations = value >> 8;
             u32 i2;
 
             value &= 0xFF;
