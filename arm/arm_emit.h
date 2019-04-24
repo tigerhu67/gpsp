@@ -1878,7 +1878,7 @@ u32 execute_store_cpsr_body(u32 _cpsr, u32 store_mask, u32 address)
   /* We're in ARM mode now */                                                 \
   generate_branch(arm)                                                        \
 
-u8 swi_hle_handle[256] =
+u8 swi_hle_handle[0x2B] =
 {
   0x0,    // SWI 0:  SoftReset
   0x0,    // SWI 1:  RegisterRAMReset
@@ -1893,7 +1893,7 @@ u8 swi_hle_handle[256] =
   0x0,    // SWI A:  ArcTan2
   0x0,    // SWI B:  CpuSet
   0x0,    // SWI C:  CpuFastSet
-  0x0,    // SWI D:  GetBIOSCheckSum
+  0x1,    // SWI D:  GetBIOSCheckSum
   0x0,    // SWI E:  BgAffineSet
   0x0,    // SWI F:  ObjAffineSet
   0x0,    // SWI 10: BitUnpack
