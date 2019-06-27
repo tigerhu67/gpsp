@@ -3411,50 +3411,50 @@ void flush_translation_cache_ram()
 #endif
   ram_translation_ptr = ram_translation_cache;
   ram_block_tag_top = 0x0101;
-  if(iwram_code_min != 0xFFFFFFFF)
-  {
-    iwram_code_min &= 0x7FFF;
-    iwram_code_max &= 0x7FFF;
-    memset(iwram + iwram_code_min, 0, iwram_code_max - iwram_code_min);
-  }
+  
+	if(iwram_code_min != 0xFFFFFFFF)
+	{
+		iwram_code_min &= 0x7FFF;
+		iwram_code_max &= 0x7FFF;
+		memset(iwram + iwram_code_min, 0, iwram_code_max - iwram_code_min);
+		iwram_code_min = 0xFFFFFFFF;
+		iwram_code_max = 0xFFFFFFFF;
+	}
 
-  if(ewram_code_min != 0xFFFFFFFF)
-  {
-    u32 ewram_code_min_page;
-    u32 ewram_code_max_page;
-    u32 ewram_code_min_offset;
-    u32 ewram_code_max_offset;
-    u32 i;
+	if(ewram_code_min != 0xFFFFFFFF)
+	{
+		u32 ewram_code_min_page;
+		u32 ewram_code_max_page;
+		u32 ewram_code_min_offset;
+		u32 ewram_code_max_offset;
+		u32 i;
 
-    ewram_code_min &= 0x3FFFF;
-    ewram_code_max &= 0x3FFFF;
+		ewram_code_min &= 0x3FFFF;
+		ewram_code_max &= 0x3FFFF;
 
-    ewram_code_min_page = ewram_code_min >> 15;
-    ewram_code_max_page = ewram_code_max >> 15;
-    ewram_code_min_offset = ewram_code_min & 0x7FFF;
-    ewram_code_max_offset = ewram_code_max & 0x7FFF;
+		ewram_code_min_page = ewram_code_min >> 15;
+		ewram_code_max_page = ewram_code_max >> 15;
+		ewram_code_min_offset = ewram_code_min & 0x7FFF;
+		ewram_code_max_offset = ewram_code_max & 0x7FFF;
 
-    if(ewram_code_min_page == ewram_code_max_page)
-    {
-      memset(ewram + (ewram_code_min_page * 0x10000) +
-       ewram_code_min_offset, 0,
-       ewram_code_max_offset - ewram_code_min_offset);
-    }
-    else
-    {
-      for(i = ewram_code_min_page + 1; i < ewram_code_max_page; i++)
-      {
-        memset(ewram + (i * 0x10000), 0, 0x8000);
-      }
+		if(ewram_code_min_page == ewram_code_max_page)
+		{
+			memset(ewram + (ewram_code_min_page * 0x10000) +
+			ewram_code_min_offset, 0,
+			ewram_code_max_offset - ewram_code_min_offset);
+		}
+		else
+		{
+			for(i = ewram_code_min_page + 1; i < ewram_code_max_page; i++)
+			{
+				memset(ewram + (i * 0x10000), 0, 0x8000);
+			}
 
-      memset(ewram, 0, ewram_code_max_offset);
-    }
-  }
-
-  iwram_code_min = 0xFFFFFFFF;
-  iwram_code_max = 0xFFFFFFFF;
-  ewram_code_min = 0xFFFFFFFF;
-  ewram_code_max = 0xFFFFFFFF;
+			memset(ewram, 0, ewram_code_max_offset);
+			ewram_code_min = 0xFFFFFFFF;
+			ewram_code_max = 0xFFFFFFFF; 
+		}
+	}
 }
 
 void flush_translation_cache_rom()
