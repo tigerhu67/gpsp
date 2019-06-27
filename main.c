@@ -226,10 +226,18 @@ void init_main()
 
 extern void load_controllers();
 
+#ifdef BITTBOY
+int motordev=-1;
+#endif
+
 int main(int argc, char *argv[])
 {
   char bios_filename[512];
   int ret;
+  
+  #ifdef BITTBOY
+  motordev = open("/dev/miyoo_vir", O_RDWR);
+  #endif
 
 #ifdef PSP_BUILD
   sceKernelRegisterSubIntrHandler(PSP_VBLANK_INT, 0,
@@ -375,6 +383,14 @@ int main(int argc, char *argv[])
 
   execute_arm_translate(execute_cycles);
   execute_arm(execute_cycles);
+#endif
+
+
+#ifdef BITTBOY
+  if(motordev > 0){
+    ioctl(motordev, MIYOO_VIR_SET_MODE, 1);
+    close(motordev);
+  }
 #endif
   return 0;
 }

@@ -1477,8 +1477,14 @@ u32 encode_bcd(u8 value)
                                                                               \
   address16(map, update_address & 0x7FFF) = _value                            \
 
+
+#ifdef BITTBOY
+extern int motordev;
+#endif
+
 void function_cc write_rtc(u32 address, u32 value)
 {
+  static u32 rumble = 0;
   u32 rtc_page_index;
   u32 update_address;
   u8 *map;
@@ -1492,6 +1498,17 @@ void function_cc write_rtc(u32 address, u32 value)
     // Bit 1: IO, input/output command data
     // Bit 2: CS, select input/output? If high make I/O write only
     case 0xC4:
+      if(rtc_registers[1] & 8){
+        if((value & 8) != rumble){
+          rumble = value & 8;
+          #ifdef BITTBOY
+          if(motordev > 0){
+            ioctl(motordev, MIYOO_VIR_SET_MODE, rumble > 0 ? 0 : 1);
+          }
+          #endif
+        }
+      }
+    
       if(rtc_state == RTC_DISABLED)
         rtc_state = RTC_IDLE;
       if(!(rtc_registers[0] & 0x04))
