@@ -165,7 +165,7 @@ typedef enum
 
 flash_mode_type flash_mode = FLASH_BASE_MODE;
 u32 flash_command_position = 0;
-u8 *flash_bank_ptr = gamepak_backup;
+u32 flash_bank_offset = 0;
 
 flash_device_id_type flash_device_id = FLASH_DEVICE_MACRONIX_64KB;
 flash_manufacturer_id_type flash_manufacturer_id =
@@ -198,7 +198,7 @@ u8 read_backup(u32 address)
   }
   else
   {
-    value = flash_bank_ptr[address];
+    value = gamepak_backup[flash_bank_offset + address];
   }
 
   return value;
@@ -1370,7 +1370,7 @@ void function_cc write_backup(u32 address, u32 value)
      (flash_mode == FLASH_ERASE_MODE) && (value == 0x30))
     {
       // Erase sector
-      memset(flash_bank_ptr + (address & 0xF000), 0xFF, 1024 * 4);
+      memset(gamepak_backup + flash_bank_offset + (address & 0xF000), 0xFF, 1024 * 4);
       backup_update = write_backup_delay;
       flash_mode = FLASH_BASE_MODE;
       flash_command_position = 0;
@@ -1381,7 +1381,7 @@ void function_cc write_backup(u32 address, u32 value)
      (flash_mode == FLASH_BANKSWITCH_MODE) && (address == 0x0000) &&
      (flash_size == FLASH_SIZE_128KB))
     {
-      flash_bank_ptr = gamepak_backup + ((value & 0x01) * (1024 * 64));
+      flash_bank_offset = ((value & 0x01) * (1024 * 64));
       flash_mode = FLASH_BASE_MODE;
     }
     else
@@ -1390,7 +1390,7 @@ void function_cc write_backup(u32 address, u32 value)
     {
       // Write value to flash ROM
       backup_update = write_backup_delay;
-      flash_bank_ptr[address] = value;
+      gamepak_backup[flash_bank_offset + address] = value;
       flash_mode = FLASH_BASE_MODE;
     }
     else
@@ -3123,7 +3123,7 @@ void init_memory()
 
   backup_type = BACKUP_NONE;
 
-  flash_bank_ptr = gamepak_backup;
+  flash_bank_offset = 0;
   flash_command_position = 0;
   eeprom_mode = EEPROM_BASE_MODE;
   eeprom_address = 0;
@@ -3255,7 +3255,7 @@ void memory_##type##_savestate(file_tag_type savestate_file)                  \
   file_##type##_variable(savestate_file, sram_size);                          \
   file_##type##_variable(savestate_file, flash_mode);                         \
   file_##type##_variable(savestate_file, flash_command_position);             \
-  file_##type##_variable(savestate_file, flash_bank_ptr);                     \
+  file_##type##_variable(savestate_file, flash_bank_offset);                  \
   file_##type##_variable(savestate_file, flash_device_id);                    \
   file_##type##_variable(savestate_file, flash_manufacturer_id);              \
   file_##type##_variable(savestate_file, flash_size);                         \
@@ -3286,12 +3286,6 @@ void memory_##type##_savestate(file_tag_type savestate_file)                  \
   file_##type(savestate_file, palette_ram, 0x400);                            \
   file_##type(savestate_file, io_registers, 0x8000);                          \
                                                                               \
-  /* This is a hack, for now. */                                              \
-  if((flash_bank_ptr < gamepak_backup) ||                                     \
-   (flash_bank_ptr > (gamepak_backup + (1024 * 64))))                         \
-  {                                                                           \
-    flash_bank_ptr = gamepak_backup;                                          \
-  }                                                                           \
 }                                                                             \
 
 memory_savestate_builder(read);
