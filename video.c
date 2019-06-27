@@ -1014,7 +1014,7 @@ static void render_scanline_conditional_bitmap(u32 start, u32 end, u16 *scanline
 
 
 
-static const u32 map_widths[] = { 256, 512, 256, 512 };
+static const u16 map_widths[] = { 256, 512, 256, 512 };
 
 // Build text scanline rendering functions.
 
@@ -1025,7 +1025,7 @@ static void render_scanline_text_##combine_op##_##alpha_op(u32 layer,         \
   render_scanline_extra_variables_##combine_op##_##alpha_op(text);            \
   u32 bg_control = io_registers[REG_BG0CNT + layer];                          \
   u32 map_size = (bg_control >> 14) & 0x03;                                   \
-  u32 map_width = map_widths[map_size];                                       \
+  u16 map_width = map_widths[map_size];                                       \
   u32 horizontal_offset =                                                     \
    (io_registers[REG_BG0HOFS + (layer * 2)] + start) % 512;                   \
   u32 vertical_offset = (io_registers[REG_VCOUNT] +                           \
@@ -1904,14 +1904,14 @@ static const bitmap_layer_render_struct bitmap_mode_renderers[3] =
   }                                                                           \
 }                                                                             \
 
-static const u32 obj_width_table[] =
+static const u8 obj_width_table[] =
   { 8, 16, 32, 64, 16, 32, 32, 64, 8, 8, 16, 32 };
-static const u32 obj_height_table[] =
+static const u8 obj_height_table[] =
   { 8, 16, 32, 64, 8, 8, 16, 32, 16, 32, 32, 64 };
 
 static FULLY_UNINITIALIZED(u8 obj_priority_list[5][160][128]);
-static u32 obj_priority_count[5][160];
-static u32 obj_alpha_count[160];
+static u8 obj_priority_count[5][160];
+static u8 obj_alpha_count[160];
 
 
 // Build obj rendering functions
@@ -2191,43 +2191,40 @@ static void order_obj(u32 video_mode)
           {
             obj_height = 160 - obj_y;
           }
+          
+          
+			switch (obj_mode)
+			{
+				case 1:
+					for(row = obj_y; row < obj_y + obj_height; row++)
+					{
+						obj_alpha_count[row]++;
+					}
+				break;
+				default:
+					if(obj_mode == 2) obj_priority = 4;
+				break;
+			}
+		  
+			for(row = obj_y; row < obj_y + obj_height; row++)
+			{
+				current_count = obj_priority_count[obj_priority][row];
+				obj_priority_list[obj_priority][row][current_count] = obj_num;
+				obj_priority_count[obj_priority][row] = current_count + 1;
+			}
 
-          if(obj_mode == 1)
-          {
-            for(row = obj_y; row < obj_y + obj_height; row++)
-            {
-              current_count = obj_priority_count[obj_priority][row];
-              obj_priority_list[obj_priority][row][current_count] = obj_num;
-              obj_priority_count[obj_priority][row] = current_count + 1;
-              obj_alpha_count[row]++;
-            }
-          }
-          else
-          {
-            if(obj_mode == 2)
-            {
-              obj_priority = 4;
-            }
-
-            for(row = obj_y; row < obj_y + obj_height; row++)
-            {
-              current_count = obj_priority_count[obj_priority][row];
-              obj_priority_list[obj_priority][row][current_count] = obj_num;
-              obj_priority_count[obj_priority][row] = current_count + 1;
-            }
-          }
-        }
+		}
       }
     }
   }
 }
 
-u32 layer_order[16];
-u32 layer_count;
+u8 layer_order[16];
+u8 layer_count;
 
-static void order_layers(u32 layer_flags)
+static void order_layers(u8 layer_flags)
 {
-  s32 priority, layer_number;
+  s8 priority, layer_number;
   layer_count = 0;
 
   for(priority = 3; priority >= 0; priority--)
@@ -2769,8 +2766,8 @@ static void expand_brighten_partial_alpha(u32 *screen_src_ptr, u16 *screen_dest_
 
 static void render_scanline_tile(u16 *scanline, u32 dispcnt)
 {
-  u32 current_layer;
-  u32 layer_order_pos;
+  u8 current_layer;
+  u8 layer_order_pos;
   u32 bldcnt = io_registers[REG_BLDCNT];
   render_scanline_layer_functions_tile();
 
@@ -2781,8 +2778,8 @@ static void render_scanline_tile(u16 *scanline, u32 dispcnt)
 static void render_scanline_bitmap(u16 *scanline, u32 dispcnt)
 {
   render_scanline_layer_functions_bitmap();
-  u32 current_layer;
-  u32 layer_order_pos;
+  u8 current_layer;
+  u8 layer_order_pos;
 
   fill_line_bg(normal, scanline, 0, 240);
 
@@ -2902,8 +2899,8 @@ static void render_scanline_conditional_tile(u32 start, u32 end, u16 *scanline,
  u32 enable_flags, u32 dispcnt, u32 bldcnt, const tile_layer_render_struct
  *layer_renderers)
 {
-  u32 current_layer;
-  u32 layer_order_pos = 0;
+  u8 current_layer;
+  u8 layer_order_pos = 0;
 
   render_layers_color_effect(render_layers_conditional,
    (layer_count && (enable_flags & 0x1F)),
@@ -2919,8 +2916,8 @@ static void render_scanline_conditional_bitmap(u32 start, u32 end, u16 *scanline
  u32 enable_flags, u32 dispcnt, u32 bldcnt, const bitmap_layer_render_struct
  *layer_renderers)
 {
-  u32 current_layer;
-  u32 layer_order_pos;
+  u8 current_layer;
+  u8 layer_order_pos;
 
   fill_line_bg(normal, scanline, start, end);
 
@@ -3246,7 +3243,7 @@ static void render_scanline_window_##type(u16 *scanline, u32 dispcnt)         \
 render_scanline_window_builder(tile);
 render_scanline_window_builder(bitmap);
 
-static const u32 active_layers[6] = { 0x1F, 0x17, 0x1C, 0x14, 0x14, 0x14 };
+static const u8 active_layers[6] = { 0x1F, 0x17, 0x1C, 0x14, 0x14, 0x14 };
 
 u32 small_resolution_width = 240;
 u32 small_resolution_height = 160;
