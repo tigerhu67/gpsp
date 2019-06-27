@@ -280,6 +280,9 @@ typedef u32 fixed8_24;
 #endif
 
 #define FULLY_UNINITIALIZED(declarator) declarator __attribute__((section(".noinit")))
+#define FP16_16_MAX_FRACTIONAL_PART 0xFFFF
+
+#define FP16_16_TO_U32(value) ((value) >> 16) 
 
 
 #endif
