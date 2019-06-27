@@ -153,12 +153,12 @@ void sound_read_savestate(file_tag_type savestate_file);
   u32 rate = value & 0x7FF;                                                   \
   gbc_sound_channel[channel].rate = rate;                                     \
   gbc_sound_channel[channel].frequency_step =                                 \
-   float_to_fp16_16(((131072.0 / (2048 - rate)) * 8.0) / sound_frequency);    \
+   float_to_fp16_16(((131072.0f / (2048 - rate)) * 8.0f) / sound_frequency);    \
   gbc_sound_channel[channel].length_status = (value >> 14) & 0x01;            \
   if(value & 0x8000)                                                          \
   {                                                                           \
     gbc_sound_channel[channel].active_flag = 1;                               \
-    gbc_sound_channel[channel].sample_index -= float_to_fp16_16(1.0 / 12.0);  \
+    gbc_sound_channel[channel].sample_index -= float_to_fp16_16(1.0f / 12.0f);  \
     gbc_sound_channel[channel].envelope_ticks =                               \
      gbc_sound_channel[channel].envelope_initial_ticks;                       \
     gbc_sound_channel[channel].envelope_volume =                              \
@@ -221,7 +221,7 @@ static u32 gbc_sound_wave_volume[4] = { 0, 16384, 8192, 4096 };
   u32 rate = value & 0x7FF;                                                   \
   gbc_sound_channel[2].rate = rate;                                           \
   gbc_sound_channel[2].frequency_step =                                       \
-   float_to_fp16_16((2097152.0 / (2048 - rate)) / sound_frequency);           \
+   float_to_fp16_16((2097152.0f / (2048 - rate)) / sound_frequency);           \
   gbc_sound_channel[2].length_status = (value >> 14) & 0x01;                  \
   if(value & 0x8000)                                                          \
   {                                                                           \
@@ -239,13 +239,13 @@ static u32 gbc_sound_wave_volume[4] = { 0, 16384, 8192, 4096 };
   if(dividing_ratio == 0)                                                     \
   {                                                                           \
     gbc_sound_channel[3].frequency_step =                                     \
-     float_to_fp16_16(1048576.0 / (1 << (frequency_shift + 1)) /              \
+     float_to_fp16_16(1048576.0f / (1 << (frequency_shift + 1)) /              \
      sound_frequency);                                                        \
   }                                                                           \
   else                                                                        \
   {                                                                           \
     gbc_sound_channel[3].frequency_step =                                     \
-     float_to_fp16_16(524288.0 / (dividing_ratio *                            \
+     float_to_fp16_16(524288.0f / (dividing_ratio *                            \
      (1 << (frequency_shift + 1))) / sound_frequency);                        \
   }                                                                           \
   gbc_sound_channel[3].noise_type = (value >> 3) & 0x01;                      \
