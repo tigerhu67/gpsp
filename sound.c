@@ -103,7 +103,7 @@ void sound_timer_queue32(u32 channel, u32 value)
   sound_buffer[buffer_index + 1] += dest_sample                               \
 
 #define render_samples(type)                                                  \
-  while(fifo_fractional <= FP16_16_MAX_FRACTIONAL_PART)                       \
+  while(fifo_fractional <= 0xFFFFFF)										  \
   {                                                                           \
     render_sample_##type();                                                   \
     fifo_fractional += frequency_step;                                        \
@@ -447,10 +447,10 @@ void update_gbc_sound(u32 cpu_ticks)
   gbc_sound_partial_ticks += fp16_16_fractional_part(buffer_ticks);
   buffer_ticks = fp16_16_to_u32(buffer_ticks);
 
-  if(gbc_sound_partial_ticks > FP16_16_MAX_FRACTIONAL_PART)
+  if(gbc_sound_partial_ticks > 0xFFFF)
   {
     buffer_ticks += FP16_16_TO_U32(gbc_sound_partial_ticks);
-    gbc_sound_partial_ticks &= FP16_16_MAX_FRACTIONAL_PART;
+    gbc_sound_partial_ticks &= 0xFFFF;
   }
 
   SDL_LockMutex(sound_mutex);
