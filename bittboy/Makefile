@@ -21,7 +21,7 @@ CFLAGS     += `/opt/bittboy-toolchain/arm-miyoo-linux-musleabi/sysroot/usr/bin/s
 
 # expecting to have PATH set up to get correct sdl-config first
 
-LIBS       = -lc -lgcc -lSDL -lasound -lz -Wl,--as-needed -Wl,--gc-sections -flto -s
+LIBS       = -lc -lgcc -lSDL -lpng -lasound -lz -Wl,--as-needed -Wl,--gc-sections -flto -s
 
 # Compilation:
 
