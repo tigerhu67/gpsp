@@ -20,6 +20,7 @@
 #include "common.h"
 #define WANT_FONT_BITS
 #include "font.h"
+#include "imageio.h"
 
 #ifdef PSP_BUILD
 
@@ -4219,6 +4220,24 @@ void video_resolution_small()
 #endif
   resolution_width = small_resolution_width;
   resolution_height = small_resolution_height;
+
+  switch(current_scale){
+  case unscaled:
+    {
+      char name[128]={0};
+      SDL_Surface *loadPNG(const char* Path, uint32_t MaxWidth, uint32_t MaxHeight);
+      sprintf(name, "%s/border.png", main_path);
+      SDL_Surface* png = loadPNG(name, GCW0_SCREEN_WIDTH, GCW0_SCREEN_HEIGHT);
+      if(png == NULL){
+        printf("failed to load border png\n");
+      }
+      SDL_BlitSurface(png, NULL, rl_screen, NULL);
+      SDL_FreeSurface(png);
+    }
+    break;
+  default:
+    break;
+  }
 }
 
 void set_gba_resolution(video_scale_type scale)
