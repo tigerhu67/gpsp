@@ -2135,18 +2135,8 @@ static void order_obj(u32 video_mode)
   u32 current_count;
   u16 *oam_ptr = oam_ram + 508;
 
-  for(priority = 0; priority < 5; priority++)
-  {
-    for(row = 0; row < 160; row++)
-    {
-      obj_priority_count[priority][row] = 0;
-    }
-  }
-
-  for(row = 0; row < 160; row++)
-  {
-    obj_alpha_count[row] = 0;
-  }
+  memset(obj_priority_count, 0, 5 * 160);
+  memset(obj_alpha_count, 0, 160);
 
   for(obj_num = 127; obj_num >= 0; obj_num--, oam_ptr -= 4)
   {
@@ -2201,8 +2191,8 @@ static void order_obj(u32 video_mode)
 						obj_alpha_count[row]++;
 					}
 				break;
-				default:
-					if(obj_mode == 2) obj_priority = 4;
+				case 2:
+					obj_priority = 4;
 				break;
 			}
 		  
@@ -2295,15 +2285,15 @@ fill_line_builder(color32);
   pixel_bottom = palette_ram_converted[(pixel_pair >> 16) & 0x1FF];           \
   pixel_bottom = (pixel_bottom | (pixel_bottom << 16)) & 0x07E0F81F;          \
   pixel_top = ((pixel_top * blend_a) + (pixel_bottom * blend_b)) >> 4;        \
-  if(pixel_top & 0x08010020)                                                  \
+  if(pixel_top & 0x08010020 != 0)                                             \
   {                                                                           \
-    if(pixel_top & 0x08000000)                                                \
+    if(pixel_top & 0x08000000 != 0)                                           \
       pixel_top |= 0x07E00000;                                                \
                                                                               \
-    if(pixel_top & 0x00010000)                                                \
+    if(pixel_top & 0x00010000 != 0)                                           \
       pixel_top |= 0x0000F800;                                                \
                                                                               \
-    if(pixel_top & 0x00000020)                                                \
+    if(pixel_top & 0x00000020 != 0)                                           \
       pixel_top |= 0x0000001F;                                                \
   }                                                                           \
 
