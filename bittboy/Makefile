@@ -8,14 +8,14 @@
 CC        = /opt/bittboy-toolchain/usr/bin/arm-miyoo-linux-musleabi-gcc
 
 OBJS      = main.o cpu.o memory.o video.o input.o sound.o gui.o \
-            cheats.o zip.o  arm_stub.o  warm.o cpu_threaded.o video_blend.o sha1.o
+            cheats.o zip.o arm_stub.o  warm.o cpu_threaded.o video_blend.o sha1.o imageio.o
 
 BIN       = gpsp
 
 # Platform specific definitions 
 
 VPATH      += .. ../arm
-CFLAGS     += -DARM_ARCH -DPC_BUILD -Wall
+CFLAGS     += -DARM_ARCH -DPC_BUILD -DBITTBOY -Wall
 CFLAGS     += -Ofast -fdata-sections -ffunction-sections -flto -fno-PIC -fprofile-use
 CFLAGS     += `/opt/bittboy-toolchain/arm-miyoo-linux-musleabi/sysroot/usr/bin/sdl-config --cflags`
 
