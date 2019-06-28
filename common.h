@@ -35,6 +35,23 @@
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
 
+#ifdef BITTBOY
+	#include <fcntl.h>
+	#include <unistd.h>
+	#include <signal.h>
+	#include <syslog.h>
+	#include <sys/mman.h>
+	#include <sys/stat.h>
+	#include <sys/ioctl.h>   
+	#include <sys/types.h>
+	#include <sys/stat.h>
+	#include <linux/ioctl.h>   
+	#define MIYOO_KBD_GET_HOTKEY  _IOWR(0x100, 0, unsigned long)
+	#define MIYOO_FB0_PUT_OSD     _IOWR(0x100, 0, unsigned long)
+	#define MIYOO_SND_SET_VOLUME  _IOWR(0x100, 0, unsigned long)
+	#define MIYOO_VIR_SET_MODE    _IOWR(0x100, 0, unsigned long)
+#endif
+
 // These includes must be used before SDL is included.
 #ifdef ARM_ARCH
 
