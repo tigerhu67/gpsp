@@ -70,6 +70,8 @@ FULLY_UNINITIALIZED(uint8_t vram[1024 * 96 * 2]);
 FULLY_UNINITIALIZED(uint8_t bios_rom[1024 * 32]);
 uint32_t bios_read_protect;
 
+u32 obj_address = 0x10000;
+
 // Up to 128kb, store SRAM, flash ROM, or EEPROM here.
 uint8_t gamepak_backup[0x20000];
 
@@ -787,10 +789,25 @@ cpu_alert_type function_cc write_io_register16(u32 address, u32 value)
   {
     case 0x00:
     {
+	  u16 bg_mode = value & 0x07;
       u32 dispcnt = io_registers[REG_DISPCNT];
-      if((value & 0x07) != (dispcnt & 0x07))
+      
+      if (bg_mode > 5)
+        value &= 0x07;
+
+      if (bg_mode < 3)
+        obj_address = 0x10000;
+      else
+        obj_address = 0x14000;
+
+      if (bg_mode != (dispcnt & 0x07))
         oam_update = 1;
 
+      if ((((dispcnt ^ value) & 0x80) != 0) && ((value & 0x80) == 0))
+      {
+        if ((io_registers[REG_DISPSTAT] & 0x01) == 0)
+          io_registers[REG_DISPSTAT] &= 0xFFFC;
+	  }
       address16(io_registers, 0x00) = value;
       break;
     }
@@ -1260,13 +1277,28 @@ void function_cc write_backup(u32 address, u32 value)
 #define write_backup32()                                                      \
 
 #define write_vram8()                                                         \
-  address &= ~0x01;                                                           \
+	if (((address >> 16) & 0x01) != 0)										  \
+		address &= 0x17FFe;													  \
+	else																	  \
+		address &= 0x0FFFe;													  \
+																			  \
+  if (address >= obj_address)												  \
+		return CPU_ALERT_NONE;												  \
   address16(vram, address) = ((value << 8) | value)                           \
 
+
 #define write_vram16()                                                        \
+  if (((address >> 16) & 0x01) != 0)                                          \
+    address &= 0x17FFF;                                                       \
+  else                                                                        \
+	address &= 0x0FFFF;														  \
   address16(vram, address) = value                                            \
 
 #define write_vram32()                                                        \
+  if (((address >> 16) & 0x01) != 0)                                          \
+    address &= 0x17FFF;                                                       \
+  else                                                                        \
+	address &= 0x0FFFF;														  \
   address32(vram, address) = value                                            \
 
 // RTC code derived from VBA's (due to lack of any real publically available
@@ -2968,6 +3000,8 @@ void init_memory()
   io_registers[REG_BG3PA] = 0x100;
   io_registers[REG_BG3PD] = 0x100;
   io_registers[REG_RCNT] = 0x8000;
+  
+  obj_address = 0x10000;
 
   backup_type = BACKUP_NONE;
 

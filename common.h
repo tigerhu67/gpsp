@@ -270,7 +270,7 @@ typedef u32 fixed8_24;
 #endif
 
 #ifdef PC_BUILD
-  #define STDIO_DEBUG
+  //#define STDIO_DEBUG
   //#define REGISTER_USAGE_ANALYZE
 #endif
 
