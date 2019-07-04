@@ -20,6 +20,9 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
+#define pIO_REG(offset) *(io_registers + (offset))
+#define GBA_IME_STATE (pIO_REG(REG_IME) != 0)
+
 typedef enum
 {
   DMA_START_IMMEDIATELY,
@@ -127,6 +130,7 @@ typedef enum
   REG_TM2CNT = 0x85,
   REG_TM3D = 0x86,
   REG_TM3CNT = 0x87,
+  REG_SIOCNT = 0x128 / 2,
   REG_P1 = 0x098,
   REG_P1CNT = 0x099,
   REG_RCNT = 0x9A,

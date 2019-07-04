@@ -18,7 +18,6 @@
 
 #include "common.h"
 #include "font.h"
-
 #ifndef _WIN32_WCE
 
 #include <sys/stat.h>
@@ -142,7 +141,6 @@ s32 load_file(const char **wildcards, char *result)
   char *file_name;
   u32 file_name_length;
   u32 ext_pos = -1;
-  u32 chosen_file, chosen_dir;
   s32 return_value = 1;
   s32 current_file_selection;
   s32 current_file_scroll_value;
@@ -174,8 +172,6 @@ s32 load_file(const char **wildcards, char *result)
 
     num_files = 0;
     num_dirs = 0;
-    chosen_file = 0;
-    chosen_dir = 0;
 
     getcwd(current_dir_name, MAX_PATH);
 
@@ -1243,9 +1239,11 @@ u32 menu(u16 *original_screen)
 
   void menu_load()
   {
+	uint32_t check_pass_rom[3];
     const char *file_ext[] = { ".gba", ".bin", ".zip", NULL };
     char load_filename[512];
     save_game_config_file();
+
     if(load_file(file_ext, load_filename) != -1)
     {
        if(load_gamepak(load_filename) == -1)
@@ -1332,10 +1330,10 @@ u32 menu(u16 *original_screen)
   {
 
   }
+  
 
   void submenu_gamepad()
   {
-		print_string("Input remapping menu", COLOR_ROM_INFO, COLOR_BG, 6, 10);
   }
 
   void submenu_analog()

@@ -169,9 +169,12 @@ void sound_timer(fixed8_24 frequency_step, u32 channel)
 
 void sound_reset_fifo(u32 channel)
 {
-  direct_sound_struct *ds = direct_sound_channel;
+	direct_sound_struct *ds = direct_sound_channel + channel;
+  
+	ds->fifo_top = 0;
+	ds->fifo_base = 0;
 
-  memset(ds->fifo, 0, 32);
+	memset(ds->fifo, 0, 32);
 }
 
 // Initial pattern data = 4bits (signed)

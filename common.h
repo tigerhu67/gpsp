@@ -260,7 +260,6 @@ typedef u32 fixed8_24;
 #include "gui.h"
 #include "zip.h"
 #include "cheats.h"
-#include "sha1.h"
 
 #ifdef ARM_ARCH
   #include "arm/warm.h"

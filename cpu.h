@@ -22,6 +22,8 @@
 
 // System mode and user mode are represented as the same here
 
+#define ARM_IRQ_STATE ((reg[REG_CPSR] & 0x80) == 0)
+
 typedef enum
 {
   MODE_USER,
@@ -35,10 +37,13 @@ typedef enum
 
 typedef enum
 {
-  CPU_ALERT_NONE,
-  CPU_ALERT_HALT,
-  CPU_ALERT_SMC,
-  CPU_ALERT_IRQ
+  CPU_ALERT_NONE    = 0,
+  CPU_ALERT_SMC     = 1,  // bit0 - SMC
+  CPU_ALERT_IRQ     = 2,  // bit1 - IRQ
+  CPU_ALERT_SMC_IRQ = 3,
+  CPU_ALERT_HALT    = 4,  // bit2 - HALT
+  CPU_ALERT_TIMER   = 8,  // bit3 - timer counter change.
+  CPU_ALERT_DMA     = 16  // bit4 - DMA transfers
 } cpu_alert_type;
 
 typedef enum
@@ -82,7 +87,14 @@ typedef enum
   REG_SAVE3         = 23,
   CPU_MODE          = 29,
   CPU_HALT_STATE    = 30,
-  CHANGED_PC_STATUS = 31
+  CHANGED_PC_STATUS = 31,
+  REMAINING_CYCLES  = 59,
+  EXECUTE_CYCLES    = 60,
+
+  CPU_DMA_HACK      = 61,
+  CPU_DMA_LAST      = 62,
+
+  REG_TMP           = 63
 } ext_reg_numbers;
 
 typedef enum

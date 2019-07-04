@@ -18,6 +18,7 @@
  */
 
 #include "common.h"
+#include "crc.h"
 
 #ifdef PSP_BUILD
 
@@ -305,7 +306,7 @@ int main(int argc, char *argv[])
 
     quit();
   }
-
+  
   init_main();
   init_sound(1);
 
@@ -314,7 +315,7 @@ int main(int argc, char *argv[])
   video_resolution_large();
   
   load_controllers();
-
+  
   if(argc > 1)
   {
     if(load_gamepak(argv[1]) == -1)
@@ -392,6 +393,7 @@ int main(int argc, char *argv[])
     close(motordev);
   }
 #endif
+
   return 0;
 }
 
@@ -406,15 +408,15 @@ void print_memory_stats(u32 *counter, u32 *region_stats, char *stats_str)
 
   printf("memory access stats: %s (out of %d)\n", stats_str, _counter);
   printf("bios: %f%%\tiwram: %f%%\tewram: %f%%\tvram: %f\n",
-   region_stats[0x0] * 100.0 / _counter, region_stats[0x3] * 100.0 /
+   region_stats[0x0] * 100.0f / _counter, region_stats[0x3] * 100.0f /
    _counter,
-   region_stats[0x2] * 100.0 / _counter, region_stats[0x6] * 100.0 /
+   region_stats[0x2] * 100.0f / _counter, region_stats[0x6] * 100.0f /
    _counter);
 
   printf("oam: %f%%\tpalette: %f%%\trom: %f%%\tother: %f%%\n",
-   region_stats[0x7] * 100.0 / _counter, region_stats[0x5] * 100.0 /
+   region_stats[0x7] * 100.0f / _counter, region_stats[0x5] * 100.0f /
    _counter,
-   rom_region_counter * 100.0 / _counter, other_region_counter * 100.0 /
+   rom_region_counter * 100.0f / _counter, other_region_counter * 100.0f /
    _counter);
 
   *counter = 0;
@@ -508,7 +510,7 @@ void trigger_ext_event()
       {
         printf("   %s: %d ms (%f ms per frame)\n",
          print_strings[i], (u32)benchmark_ticks[i] / 1000,
-         (float)(benchmark_ticks[i] / (1000.0 * event_cycles_trigger)));
+         (float)(benchmark_ticks[i] / (1000.0f * event_cycles_trigger)));
         if(i == 4)
           printf("\n");
       }

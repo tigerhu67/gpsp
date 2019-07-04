@@ -19,7 +19,7 @@
 
 #define IN_MEMORY_C
 #include "common.h"
-
+#include "crc.h"
 static uint8_t IsNintendoBIOS = 0;
 
 // This table is configured for sequential access on system defaults
@@ -494,75 +494,168 @@ u32 function_cc read_eeprom()
       break;                                                                  \
   }                                                                           \
 
-#define trigger_dma(dma_number)                                               \
-  if(value & 0x8000)                                                          \
+
+
+#define TRIGGER_DMA0()                                                        \
+{                                                                             \
+  if ((value & 0x8000) != 0)                                                  \
   {                                                                           \
-    if(dma[dma_number].start_type == DMA_INACTIVE)                            \
+    if (dma[0].start_type == DMA_INACTIVE)                                     \
     {                                                                         \
-      u32 start_type = (value >> 12) & 0x03;                                  \
-      u32 dest_address = address32(io_registers, (dma_number * 12) + 0xB4) &  \
-       0xFFFFFFF;                                                             \
+      dma[0].dma_channel = 0;                                                  \
+      dma[0].start_type = (value >> 12) & 0x03;                                \
                                                                               \
-      dma[dma_number].dma_channel = dma_number;                               \
-      dma[dma_number].source_address =                                        \
-       address32(io_registers, (dma_number * 12) + 0xB0) & 0xFFFFFFF;         \
-      dma[dma_number].dest_address = dest_address;                            \
-      dma[dma_number].source_direction = (value >>  7) & 0x03;                \
-      dma[dma_number].repeat_type = (value >> 9) & 0x01;                      \
-      dma[dma_number].start_type = start_type;                                \
-      dma[dma_number].irq = (value >> 14) & 0x01;                             \
+      dma[0].source_address = address32(io_registers, 0xB0) & 0x07FFFFFF;      \
+      dma[0].dest_address   = address32(io_registers, 0xB4) & 0x07FFFFFF;      \
                                                                               \
-      /* If it is sound FIFO DMA make sure the settings are a certain way */  \
-      if((dma_number >= 1) && (dma_number <= 2) &&                            \
-       (start_type == DMA_START_SPECIAL))                                     \
-      {                                                                       \
-        dma[dma_number].length_type = DMA_32BIT;                              \
-        dma[dma_number].length = 4;                                           \
-        dma[dma_number].dest_direction = DMA_FIXED;                           \
-        if(dest_address == 0x40000A4)                                         \
-          dma[dma_number].direct_sound_channel = DMA_DIRECT_SOUND_B;          \
-        else                                                                  \
-          dma[dma_number].direct_sound_channel = DMA_DIRECT_SOUND_A;          \
-      }                                                                       \
-      else                                                                    \
-      {                                                                       \
-        u32 length =                                                          \
-         address16(io_registers, (dma_number * 12) + 0xB8);                   \
+      dma[0].source_direction = (value >> 7) & 0x03;                           \
+      dma[0].repeat_type = (value >> 9) & 0x01;                                \
+      dma[0].irq = (value >> 14) & 0x01;                                       \
                                                                               \
-        if((dma_number == 3) && ((dest_address >> 24) == 0x0D) &&             \
-         ((length & 0x1F) == 17))                                             \
-        {                                                                     \
-          eeprom_size = EEPROM_8_KBYTE;                                       \
-        }                                                                     \
+      u32 length = address16(io_registers, 0xB8) & 0x3FFF;                    \
                                                                               \
-        if(dma_number < 3)                                                    \
-          length &= 0x3FFF;                                                   \
+      dma[0].dest_direction = (value >> 5) & 0x03;                             \
+      dma[0].length_type = (value >> 10) & 0x01;                               \
+      dma[0].length = (length == 0) ? 0x4000 : length;                         \
                                                                               \
-        if(length == 0)                                                       \
-        {                                                                     \
-          if(dma_number == 3)                                                 \
-            length = 0x10000;                                                 \
-          else                                                                \
-            length = 0x04000;                                                 \
-        }                                                                     \
-                                                                              \
-        dma[dma_number].length = length;                                      \
-        dma[dma_number].length_type = (value >> 10) & 0x01;                   \
-        dma[dma_number].dest_direction = (value >> 5) & 0x03;                 \
-      }                                                                       \
-                                                                              \
-      address16(io_registers, (dma_number * 12) + 0xBA) = value;              \
-      if(start_type == DMA_START_IMMEDIATELY)                                 \
-        return dma_transfer(dma + dma_number);                                \
+      if (dma[0].start_type == DMA_START_IMMEDIATELY)                          \
+        return dma_transfer(dma + 0);                                         \
     }                                                                         \
   }                                                                           \
   else                                                                        \
   {                                                                           \
-    dma[dma_number].start_type = DMA_INACTIVE;                                \
-    dma[dma_number].direct_sound_channel = DMA_NO_DIRECT_SOUND;               \
-    address16(io_registers, (dma_number * 12) + 0xBA) = value;                \
+    dma[0].start_type = DMA_INACTIVE;                                          \
   }                                                                           \
+}                                                                             \
 
+#define TRIGGER_DMA1()                                                        \
+{                                                                             \
+  if ((value & 0x8000) != 0)                                                  \
+  {                                                                           \
+    if (dma[1].start_type == DMA_INACTIVE)                                     \
+    {                                                                         \
+      dma[1].dma_channel = 1;                                                  \
+      dma[1].start_type = (value >> 12) & 0x03;                                \
+                                                                              \
+      dma[1].source_address = address32(io_registers, 0xBC) & 0x0FFFFFFF;      \
+      dma[1].dest_address   = address32(io_registers, 0xC0) & 0x07FFFFFF;      \
+                                                                              \
+      dma[1].source_direction = (value >> 7) & 0x03;                           \
+      dma[1].repeat_type = (value >> 9) & 0x01;                                \
+      dma[1].irq = (value >> 14) & 0x01;                                       \
+                                                                              \
+      if (dma[1].start_type == DMA_START_SPECIAL)                              \
+      {                                                                       \
+        dma[1].dest_direction = DMA_FIXED;                                     \
+        dma[1].length_type = DMA_32BIT;                                        \
+        dma[1].length = 4;                                                     \
+                                                                              \
+        if (dma[1].dest_address == 0x40000A4)                                  \
+          dma[1].direct_sound_channel = DMA_DIRECT_SOUND_B;                    \
+        else                                                                  \
+          dma[1].direct_sound_channel = DMA_DIRECT_SOUND_A;                    \
+      }                                                                       \
+      else                                                                    \
+      {                                                                       \
+        u32 length = address16(io_registers, 0xC4) & 0x3FFF;                  \
+                                                                              \
+        dma[1].dest_direction = (value >> 5) & 0x03;                           \
+        dma[1].length_type = (value >> 10) & 0x01;                             \
+        dma[1].length = (length == 0) ? 0x4000 : length;                       \
+                                                                              \
+        if (dma[1].start_type == DMA_START_IMMEDIATELY)                        \
+          return dma_transfer(dma + 1);                                       \
+      }                                                                       \
+    }                                                                         \
+  }                                                                           \
+  else                                                                        \
+  {                                                                           \
+    dma[1].start_type = DMA_INACTIVE;                                          \
+    dma[1].direct_sound_channel = DMA_NO_DIRECT_SOUND;                         \
+  }                                                                           \
+}                                                                             \
+
+#define TRIGGER_DMA2()                                                        \
+{                                                                             \
+  if ((value & 0x8000) != 0)                                                  \
+  {                                                                           \
+    if (dma[2].start_type == DMA_INACTIVE)                                     \
+    {                                                                         \
+      dma[2].dma_channel = 2;                                                  \
+      dma[2].start_type = (value >> 12) & 0x03;                                \
+                                                                              \
+      dma[2].source_address = address32(io_registers, 0xC8) & 0x0FFFFFFF;      \
+      dma[2].dest_address   = address32(io_registers, 0xCC) & 0x07FFFFFF;      \
+                                                                              \
+      dma[2].source_direction = (value >> 7) & 0x03;                           \
+      dma[2].repeat_type = (value >> 9) & 0x01;                                \
+      dma[2].irq = (value >> 14) & 0x01;                                       \
+                                                                              \
+      if (dma[2].start_type == DMA_START_SPECIAL)                              \
+      {                                                                       \
+        dma[2].dest_direction = DMA_FIXED;                                     \
+        dma[2].length_type = DMA_32BIT;                                        \
+        dma[2].length = 4;                                                     \
+                                                                              \
+        if (dma[2].dest_address == 0x40000A4)                                  \
+          dma[2].direct_sound_channel = DMA_DIRECT_SOUND_B;                    \
+        else                                                                  \
+          dma[2].direct_sound_channel = DMA_DIRECT_SOUND_A;                    \
+      }                                                                       \
+      else                                                                    \
+      {                                                                       \
+        u32 length = address16(io_registers, 0xD0) & 0x3FFF;                  \
+                                                                              \
+        dma[2].dest_direction = (value >> 5) & 0x03;                           \
+        dma[2].length_type = (value >> 10) & 0x01;                             \
+        dma[2].length = (length == 0) ? 0x4000 : length;                       \
+                                                                              \
+        if (dma[2].start_type == DMA_START_IMMEDIATELY)                        \
+          return dma_transfer(dma + 2);                                       \
+      }                                                                       \
+    }                                                                         \
+  }                                                                           \
+  else                                                                        \
+  {                                                                           \
+    dma[2].start_type = DMA_INACTIVE;                                          \
+    dma[2].direct_sound_channel = DMA_NO_DIRECT_SOUND;                         \
+  }                                                                           \
+}                                                                             \
+
+#define TRIGGER_DMA3(dma_number)                                                        \
+{                                                                             \
+  if ((value & 0x8000) != 0)                                                  \
+  {                                                                           \
+    if (dma[3].start_type == DMA_INACTIVE)                                     \
+    {                                                                         \
+      dma[3].dma_channel = 3;                                                  \
+      dma[3].start_type = (value >> 12) & 0x03;                                \
+                                                                              \
+      dma[3].source_address = address32(io_registers, 0xD4) & 0x0FFFFFFF;      \
+      dma[3].dest_address   = address32(io_registers, 0xD8) & 0x0FFFFFFF;      \
+                                                                              \
+      dma[3].source_direction = (value >> 7) & 0x03;                           \
+      dma[3].repeat_type = (value >> 9) & 0x01;                                \
+      dma[3].irq = (value >> 14) & 0x01;                                       \
+                                                                              \
+      u32 length = address16(io_registers, 0xDC);                             \
+                                                                              \
+      dma[3].dest_direction = (value >> 5) & 0x03;                             \
+      dma[3].length_type = (value >> 10) & 0x01;                               \
+      dma[3].length = (length == 0) ? 0x10000 : length;                        \
+                                                                              \
+      if (((dma[3].dest_address >> 24) == 0x0D) && (length == 17))             \
+        eeprom_size = EEPROM_8_KBYTE;                                         \
+                                                                              \
+      if (dma[3].start_type == DMA_START_IMMEDIATELY)                          \
+        return dma_transfer(dma + 3);                                         \
+    }                                                                         \
+  }                                                                           \
+  else                                                                        \
+  {                                                                           \
+    dma[3].start_type = DMA_INACTIVE;                                          \
+  }                                                                           \
+}                                                                             \
 
 #define access_register8_high(address)                                        \
   value = (value << 8) | (address8(io_registers, address))                    \
@@ -576,387 +669,92 @@ u32 function_cc read_eeprom()
 #define access_register16_low(address)                                        \
   value = ((address16(io_registers, address + 2)) << 16) | value              \
 
+// SIO
+typedef enum
+{
+  NORMAL8,
+  NORMAL32,
+  MULTIPLAYER,
+  UART,
+  GP,
+  JOYBUS
+} SIO_MODE_TYPE;
+
+static SIO_MODE_TYPE sio_mode(u16 reg_sio_cnt, u16 reg_rcnt)
+{
+  if ((reg_rcnt & 0x8000) == 0x0000)
+  {
+    switch (reg_sio_cnt & 0x3000)
+    {
+      case 0x0000:
+        return NORMAL8;
+
+      case 0x1000:
+        return NORMAL32;
+
+      case 0x2000:
+        return MULTIPLAYER;
+
+      case 0x3000:
+        return UART;
+    }
+  }
+
+  if ((reg_rcnt & 0x4000) != 0)
+    return JOYBUS;
+
+  return GP;
+}
+
+static cpu_alert_type sio_control(u32 value)
+{
+  SIO_MODE_TYPE mode = sio_mode(value, io_registers[REG_RCNT]);
+  cpu_alert_type alert = CPU_ALERT_NONE;
+
+  switch (mode)
+  {
+    case NORMAL8:
+    case NORMAL32:
+      if ((value & 0x80) != 0)
+      {
+        value &= 0xFF7F;
+
+        if ((value & 0x4001) == 0x4001)
+        {
+          io_registers[REG_IF] |= IRQ_SERIAL;
+          alert = CPU_ALERT_IRQ;
+        }
+      }
+      break;
+
+    case MULTIPLAYER:
+      value &= 0xFF83;
+      value |= 0x0C;
+      break;
+
+    case UART:
+    case JOYBUS:
+    case GP:
+      break;
+  }
+
+  io_registers[REG_SIOCNT] = value;
+
+  return alert;
+}
+
+
+cpu_alert_type function_cc write_io_register16(u32 address, u32 value);
+
 cpu_alert_type function_cc write_io_register8(u32 address, u32 value)
 {
   switch(address)
   {
-    case 0x00:
-    {
-      u32 dispcnt = io_registers[REG_DISPCNT];
-
-      if((value & 0x07) != (dispcnt & 0x07))
-        oam_update = 1;
-
-      address8(io_registers, 0x00) = value;
-      break;
-    }
-
-    // DISPSTAT (lower byte)
-    case 0x04:
-      address8(io_registers, 0x04) =
-       (address8(io_registers, 0x04) & 0x07) | (value & ~0x07);
-      break;
-
-    // VCOUNT
-    case 0x06:
-    case 0x07:
-      break;
-
-    // BG2 reference X
-    case 0x28:
-      access_register8_low(0x28);
-      access_register16_low(0x28);
-      affine_reference_x[0] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x28) = value;
-      break;
-
-    case 0x29:
-      access_register8_high(0x28);
-      access_register16_low(0x28);
-      affine_reference_x[0] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x28) = value;
-      break;
-
-    case 0x2A:
-      access_register8_low(0x2A);
-      access_register16_high(0x28);
-      affine_reference_x[0] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x28) = value;
-      break;
-
-    case 0x2B:
-      access_register8_high(0x2A);
-      access_register16_high(0x28);
-      affine_reference_x[0] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x28) = value;
-      break;
-
-    // BG2 reference Y
-    case 0x2C:
-      access_register8_low(0x2C);
-      access_register16_low(0x2C);
-      affine_reference_y[0] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x2C) = value;
-      break;
-
-    case 0x2D:
-      access_register8_high(0x2C);
-      access_register16_low(0x2C);
-      affine_reference_y[0] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x2C) = value;
-      break;
-
-    case 0x2E:
-      access_register8_low(0x2E);
-      access_register16_high(0x2C);
-      affine_reference_y[0] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x2C) = value;
-      break;
-
-    case 0x2F:
-      access_register8_high(0x2E);
-      access_register16_high(0x2C);
-      affine_reference_y[0] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x2C) = value;
-      break;
-
-    // BG3 reference X
-    case 0x38:
-      access_register8_low(0x38);
-      access_register16_low(0x38);
-      affine_reference_x[1] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x38) = value;
-      break;
-
-    case 0x39:
-      access_register8_high(0x38);
-      access_register16_low(0x38);
-      affine_reference_x[1] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x38) = value;
-      break;
-
-    case 0x3A:
-      access_register8_low(0x3A);
-      access_register16_high(0x38);
-      affine_reference_x[1] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x38) = value;
-      break;
-
-    case 0x3B:
-      access_register8_high(0x3A);
-      access_register16_high(0x38);
-      affine_reference_x[1] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x38) = value;
-      break;
-
-    // BG3 reference Y
-    case 0x3C:
-      access_register8_low(0x3C);
-      access_register16_low(0x3C);
-      affine_reference_y[1] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x3C) = value;
-      break;
-
-    case 0x3D:
-      access_register8_high(0x3C);
-      access_register16_low(0x3C);
-      affine_reference_y[1] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x3C) = value;
-      break;
-
-    case 0x3E:
-      access_register8_low(0x3E);
-      access_register16_high(0x3C);
-      affine_reference_y[1] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x3C) = value;
-      break;
-
-    case 0x3F:
-      access_register8_high(0x3E);
-      access_register16_high(0x3C);
-      affine_reference_y[1] = (s32)(value << 4) >> 4;
-      address32(io_registers, 0x3C) = value;
-      break;
-
-    // Sound 1 control sweep
-    case 0x60:
-      access_register8_low(0x60);
-      gbc_sound_tone_control_sweep();
-      break;
-
-    case 0x61:
-      access_register8_low(0x60);
-      gbc_sound_tone_control_sweep();
-      break;
-
-    // Sound 1 control duty/length/envelope
-    case 0x62:
-      access_register8_low(0x62);
-      gbc_sound_tone_control_low(0, 0x62);
-      break;
-
-    case 0x63:
-      access_register8_high(0x62);
-      gbc_sound_tone_control_low(0, 0x62);
-      break;
-
-    // Sound 1 control frequency
-    case 0x64:
-      access_register8_low(0x64);
-      gbc_sound_tone_control_high(0, 0x64);
-      break;
-
-    case 0x65:
-      access_register8_high(0x64);
-      gbc_sound_tone_control_high(0, 0x64);
-      break;
-
-    // Sound 2 control duty/length/envelope
-    case 0x68:
-      access_register8_low(0x68);
-      gbc_sound_tone_control_low(1, 0x68);
-      break;
-
-    case 0x69:
-      access_register8_high(0x68);
-      gbc_sound_tone_control_low(1, 0x68);
-      break;
-
-    // Sound 2 control frequency
-    case 0x6C:
-      access_register8_low(0x6C);
-      gbc_sound_tone_control_high(1, 0x6C);
-      break;
-
-    case 0x6D:
-      access_register8_high(0x6C);
-      gbc_sound_tone_control_high(1, 0x6C);
-      break;
-
-    // Sound 3 control wave
-    case 0x70:
-      access_register8_low(0x70);
-      gbc_sound_wave_control();
-      break;
-
-    case 0x71:
-      access_register8_high(0x70);
-      gbc_sound_wave_control();
-      break;
-
-    // Sound 3 control length/volume
-    case 0x72:
-      access_register8_low(0x72);
-      gbc_sound_tone_control_low_wave();
-      break;
-
-    case 0x73:
-      access_register8_high(0x72);
-      gbc_sound_tone_control_low_wave();
-      break;
-
-    // Sound 3 control frequency
-    case 0x74:
-      access_register8_low(0x74);
-      gbc_sound_tone_control_high_wave();
-      break;
-
-    case 0x75:
-      access_register8_high(0x74);
-      gbc_sound_tone_control_high_wave();
-      break;
-
-    // Sound 4 control length/envelope
-    case 0x78:
-      access_register8_low(0x78);
-      gbc_sound_tone_control_low(3, 0x78);
-      break;
-
-    case 0x79:
-      access_register8_high(0x78);
-      gbc_sound_tone_control_low(3, 0x78);
-      break;
-
-    // Sound 4 control frequency
-    case 0x7C:
-      access_register8_low(0x7C);
-      gbc_sound_noise_control();
-      break;
-
-    case 0x7D:
-      access_register8_high(0x7C);
-      gbc_sound_noise_control();
-      break;
-
-    // Sound control L
-    case 0x80:
-      access_register8_low(0x80);
-      gbc_trigger_sound();
-      break;
-
-    case 0x81:
-      access_register8_high(0x80);
-      gbc_trigger_sound();
-      break;
-
-    // Sound control H
-    case 0x82:
-      access_register8_low(0x82);
-      trigger_sound();
-      break;
-
-    case 0x83:
-      access_register8_high(0x82);
-      trigger_sound();
-      break;
-
-    // Sound control X
-    case 0x84:
-      sound_on();
-      break;
-
-    // Sound wave RAM
-    case 0x90 ... 0x9F:
-      gbc_sound_wave_update = 1;
-      address8(io_registers, address) = value;
-      break;
-
-    // Sound FIFO A
-    case 0xA0 ... 0xA3:
-	  address8(io_registers, address) = value;
-      sound_timer_queue32(0, value);
-      break;
-
-    // Sound FIFO B
-    case 0xA4 ... 0xA7:
-      address8(io_registers, address) = value;
-      sound_timer_queue32(1, value);
-      break;
-
-
-    // DMA control (trigger byte)
-    case 0xBB:  // DMA channel 0
-    case 0xC7:  // DMA channel 1
-    case 0xD3:  // DMA channel 2
-    case 0xDF:  // DMA channel 3
-      access_register8_high(address - 1);
-      trigger_dma((address - 0xBB) / 12);
+   // Post Boot
+    case 0x300:
+      address8(io_registers, 0x300) = value;
 	break;
-
-    // Timer counts
-    case 0x100:
-      access_register8_low(0x100);
-      count_timer(0);
-      break;
-
-    case 0x101:
-      access_register8_high(0x100);
-      count_timer(0);
-      break;
-
-    case 0x104:
-      access_register8_low(0x104);
-      count_timer(1);
-      break;
-
-    case 0x105:
-      access_register8_high(0x104);
-      count_timer(1);
-      break;
-
-    case 0x108:
-      access_register8_low(0x108);
-      count_timer(2);
-      break;
-
-    case 0x109:
-      access_register8_high(0x108);
-      count_timer(2);
-      break;
-
-    case 0x10C:
-      access_register8_low(0x10C);
-      count_timer(3);
-      break;
-
-    case 0x10D:
-      access_register8_high(0x10C);
-      count_timer(3);
-      break;
-
-    // Timer control (trigger byte)
-    case 0x103:  // Timer 0
-    case 0x107:  // Timer 1
-    case 0x10B:  // Timer 2
-    case 0x10F:  // Timer 3
-      access_register8_high(address - 1);
-      trigger_timer((address - 0x103) / 4);
-	break;
-
-	case 0x128:
-    case 0x129:
-    case 0x134:
-    case 0x135:
-    // P1
-    case 0x130:
-    case 0x131:
-      /* Read only */
-      break;
-
-      // IE
-      case 0x200:
-        address8(io_registers, 0x200) = value;
-        break;
-
-    // IF
-    case 0x202:
-      address8(io_registers, 0x202) &= ~value;
-      break;
-
-    case 0x203:
-      address8(io_registers, 0x203) &= ~value;
-      break;
-
+	  
     // Halt
     case 0x301:
       if((value & 0x01) == 0)
@@ -967,9 +765,17 @@ cpu_alert_type function_cc write_io_register8(u32 address, u32 value)
       return CPU_ALERT_HALT;
       break;
 
-    default:
-      address8(io_registers, address) = value;
-      break;
+   default:
+      if ((address & 0x01) != 0)
+      {
+        address &= ~0x01;
+        access_register8_high(address);
+      }
+      else
+      {
+        access_register8_low(address);
+      }
+		return write_io_register16(address, value);
   }
 
   return CPU_ALERT_NONE;
@@ -1138,12 +944,33 @@ cpu_alert_type function_cc write_io_register16(u32 address, u32 value)
       break;
 
     // DMA control
-    case 0xBA:  // DMA channel 0
+    case 0xBA:
+      address16(io_registers, 0xBA) = value;
+      TRIGGER_DMA0();
+      break;
+
+    case 0xC6:
+      address16(io_registers, 0xC6) = value;
+      TRIGGER_DMA1();
+      break;
+
+    case 0xD2:
+      address16(io_registers, 0xD2) = value;
+      TRIGGER_DMA2();
+      break;
+
+    case 0xDE:
+      address16(io_registers, 0xDE) = value;
+      TRIGGER_DMA3();
+	break;
+
+    // DMA control
+    /*case 0xBA:  // DMA channel 0
     case 0xC6:  // DMA channel 1
     case 0xD2:  // DMA channel 2
     case 0xDE:  // DMA channel 3
       trigger_dma((address - 0xBA) / 12);
-	break;
+	break;*/
 
     // Timer counts
     case 0x100:
@@ -1162,8 +989,7 @@ cpu_alert_type function_cc write_io_register16(u32 address, u32 value)
 	break;
 
     case 0x128:
-      address16(io_registers, 0x128) |= 0x0C;
-	break;
+      return sio_control(value);
 
     // P1
     case 0x130:
@@ -1171,17 +997,29 @@ cpu_alert_type function_cc write_io_register16(u32 address, u32 value)
 
     // IE
     case 0x200:
+      value &= 0x3FFF;
       address16(io_registers, 0x200) = value;
+	  if (((value & io_registers[REG_IF]) != 0) && GBA_IME_STATE && ARM_IRQ_STATE)
+		return CPU_ALERT_IRQ;
 	break;
 
-    // Interrupt flag
+    // IF - Interrupt Request flags
     case 0x202:
-      address16(io_registers, 0x202) &= ~value;
-      break;
+      value = ~value & 0x3FFF;
+      address16(io_registers, 0x202) &= value;
+	break;
 
     // WAITCNT
     case 0x204:
       break;
+      
+    // IME - Interrupt Master Enable Register
+    case 0x208:
+      value &= 0x0001;
+      address16(io_registers, 0x208) = value;
+      if (((io_registers[REG_IE] & io_registers[REG_IF]) != 0) && (value != 0) && ARM_IRQ_STATE)
+        return CPU_ALERT_IRQ;
+	break;
 
     // Halt
     case 0x300:
@@ -1238,6 +1076,13 @@ cpu_alert_type function_cc write_io_register32(u32 address, u32 value)
     case 0xA4:
       sound_timer_queue32(1, value);
       break;
+      
+    case 0xB0: case 0xBC: case 0xC8: case 0xD4: // DMA Source Address
+    case 0xB4: case 0xC0: case 0xCC: case 0xD8: // DMA Destination Address
+    case 0x120:                                 // SIO Data (Normal-32bit Mode)
+    case 0x150: case 0x154:                     // SIO JOY Bus
+      address32(io_registers, address) = value;
+	break; 
 
     default:
     {
@@ -2029,7 +1874,11 @@ s32 load_game_config(char *gamepak_title, char *gamepak_code, char *gamepak_make
   sprintf(config_path, "%s" PATH_SEPARATOR "%s", main_path, CONFIG_FILENAME);
 
   config_file = fopen(config_path, "rb");
-
+  
+  printf("Title : %s\n", gamepak_title);
+  printf("Code : %s\n", gamepak_code);
+  printf("Code : %s\n", gamepak_maker); 
+  
   if(config_file)
   {
     while(fgets(current_line, 256, config_file))
@@ -2112,9 +1961,11 @@ s32 load_game_config(char *gamepak_title, char *gamepak_code, char *gamepak_make
 
     fclose(config_file);
   }
-
+  else
 #ifndef PSP_BUILD
-  printf("game config missing\n");
+  {
+	printf("game config missing\n");
+  }
 #endif
   return -1;
 }
@@ -2220,13 +2071,9 @@ u32 load_gamepak(char *name)
   return -1;
 }
 
-uint8_t nintendo_bios_sha1[] = {
-	0x30, 0x0c, 0x20, 0xdf, 0x67, 0x31, 0xa3, 0x39, 0x52, 0xde,
-	0xd8, 0xc4, 0x36, 0xf7, 0xf1, 0x86, 0xd2, 0x5d, 0x34, 0x92,
-};
-
 s32 load_bios(char *name)
 {
+	uint32_t checksum_bios = 0;
 	file_open(bios_file, name, read);
 
 	if(file_check_valid(bios_file))
@@ -2234,12 +2081,13 @@ s32 load_bios(char *name)
 		file_read(bios_file, bios_rom, 0x4000);
 		file_close(bios_file);
 
-		sha1nfo sha1;
-		sha1_init(&sha1);
-		sha1_write(&sha1, bios_rom, 0x4000);
-		uint8_t* digest = sha1_result(&sha1);
-		IsNintendoBIOS = memcmp(digest, nintendo_bios_sha1, SHA1_HASH_LENGTH) == 0;
-
+		checksum_bios = crc32 (0, bios_rom, 0x4000);
+		IsNintendoBIOS = 0;
+		/* Yes if it is an official BIOS */
+		if (checksum_bios == 0x81977335)
+		{
+			IsNintendoBIOS = 1;
+		}
 		return 0;
 	}
 
