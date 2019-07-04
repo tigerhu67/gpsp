@@ -2286,15 +2286,15 @@ fill_line_builder(color32);
   pixel_bottom = palette_ram_converted[(pixel_pair >> 16) & 0x1FF];           \
   pixel_bottom = (pixel_bottom | (pixel_bottom << 16)) & 0x07E0F81F;          \
   pixel_top = ((pixel_top * blend_a) + (pixel_bottom * blend_b)) >> 4;        \
-  if(pixel_top & 0x08010020 != 0)                                             \
+  if(pixel_top & 0x08010020)                                                  \
   {                                                                           \
-    if(pixel_top & 0x08000000 != 0)                                           \
+    if(pixel_top & 0x08000000)                                                \
       pixel_top |= 0x07E00000;                                                \
                                                                               \
-    if(pixel_top & 0x00010000 != 0)                                           \
+    if(pixel_top & 0x00010000)                                                \
       pixel_top |= 0x0000F800;                                                \
                                                                               \
-    if(pixel_top & 0x00000020 != 0)                                           \
+    if(pixel_top & 0x00000020)                                                \
       pixel_top |= 0x0000001F;                                                \
   }                                                                           \
 
