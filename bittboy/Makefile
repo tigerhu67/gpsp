@@ -5,7 +5,7 @@
 
 # Global definitions
 
-CC        = /opt/bittboy-toolchain/usr/bin/arm-miyoo-linux-musleabi-gcc
+CC        = /opt/miyoo/usr/bin/arm-buildroot-linux-musleabi-gcc
 
 OBJS      = main.o cpu.o memory.o video.o input.o sound.o gui.o \
             cheats.o zip.o arm_stub.o  warm.o cpu_threaded.o video_blend.o sha1.o imageio.o
@@ -17,7 +17,7 @@ BIN       = gpsp
 VPATH      += .. ../arm
 CFLAGS     += -DARM_ARCH -DPC_BUILD -DBITTBOY -Wall
 CFLAGS     += -Ofast -fdata-sections -ffunction-sections -flto -fno-PIC -fprofile-use
-CFLAGS     += `/opt/bittboy-toolchain/arm-miyoo-linux-musleabi/sysroot/usr/bin/sdl-config --cflags`
+CFLAGS     += `/opt/miyoo/arm-buildroot-linux-musleabi/sysroot/usr/bin/sdl-config --cflags`
 
 # expecting to have PATH set up to get correct sdl-config first
 
