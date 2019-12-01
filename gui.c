@@ -1349,10 +1349,30 @@ u32 menu(u16 *original_screen)
 		menu_change_state();
   }
 
+ int32_t getBatteryStatus() {
+	char buf[32] = "-1";
+	FILE *f = fopen("/sys/devices/platform/soc/1c23400.battery/power_supply/miyoo-battery/voltage_now", "r");
+	if (f) {
+		fgets(buf, sizeof(buf), f);
+	}
+	fclose(f);
+	return atol(buf);
+}
+
+ char * getDeveloperInfo( char *buffer){
+    int32_t status = getBatteryStatus();
+    if(status>10000){
+      status=10000;
+    }
+    sprintf(buffer, "Modified by tigerhu67 (v1.0.0) Battery:%d(%d%%)",status,status*100/10000);
+    return buffer;
+ }
+
   void submenu_main()
   {
-		print_string("Ported to Bittboy by taotao 446717758", COLOR_ROM_INFO, COLOR_BG, 6, 184);
-	  
+		//print_string("Ported to Bittboy by Gameblabla", COLOR_ROM_INFO, COLOR_BG, 6, 184);
+	  print_string(getDeveloperInfo(print_buffer), COLOR_ROM_INFO, COLOR_BG, 6, 184);
+    
 		strncpy(print_buffer, gamepak_filename, 80);
 		print_string(print_buffer, COLOR_ROM_INFO, COLOR_BG, 6, 10);
 		sprintf(print_buffer, "%s  %s  %s", gamepak_title, gamepak_code, gamepak_maker);

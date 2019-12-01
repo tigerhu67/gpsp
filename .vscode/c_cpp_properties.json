@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/miyoo/arm-buildroot-linux-musleabi/sysroot/usr/include",
+                "/opt/miyoo/arm-buildroot-linux-musleabi/sysroot/usr/include/SDL"
+            ],
+            "defines": ["BITTBOY"],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}

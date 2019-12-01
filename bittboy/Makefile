@@ -5,7 +5,11 @@
 
 # Global definitions
 
+<<<<<<< HEAD
 CC        = /opt/miyoo/usr/bin/arm-buildroot-linux-musleabi-gcc
+=======
+CC        = /opt/miyoo/usr/bin/arm-linux-gcc
+>>>>>>> master
 
 OBJS      = main.o cpu.o memory.o video.o input.o sound.o gui.o \
             cheats.o zip.o arm_stub.o  warm.o cpu_threaded.o video_blend.o sha1.o imageio.o
