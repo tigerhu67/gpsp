@@ -1355,7 +1355,7 @@ u32 menu(u16 *original_screen)
     }
 
     percent = (percent - 3500) * 100 / (4050 - 3500);
-    sprintf(buffer, "Modified by tigerhu67 (v1.0.0) Battery:%d(%d%%)", status, percent);
+    sprintf(buffer, "Modified by tigerhu67 (v1.0.0), Battery:%d%% (%d)", percent, status);
     return buffer;
   }
 
@@ -1870,9 +1870,13 @@ u32 menu(u16 *original_screen)
 
     case CURSOR_EXIT:
       if (current_menu == &main_menu)
+      {
         menu_exit();
-
-      choose_menu(&main_menu);
+      }
+      else
+      {
+        choose_menu(&main_menu);
+      }
       break;
 
     case CURSOR_SELECT:

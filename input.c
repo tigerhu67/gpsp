@@ -25,23 +25,23 @@ extern uint16_t io_registers[1024 * 16];
 
 void trigger_key(u32 key)
 {
-	u32 p1_cnt = io_registers[REG_P1CNT];
+  u32 p1_cnt = io_registers[REG_P1CNT];
 
-	if((p1_cnt >> 14) & 0x01)
-	{
+  if ((p1_cnt >> 14) & 0x01)
+  {
     u32 key_intersection = (p1_cnt & key) & 0x3FF;
 
-    if(p1_cnt >> 15)
+    if (p1_cnt >> 15)
     {
-      if(key_intersection == (p1_cnt & 0x3FF))
+      if (key_intersection == (p1_cnt & 0x3FF))
         raise_interrupt(IRQ_KEYPAD);
     }
     else
     {
-			if(key_intersection)
-				raise_interrupt(IRQ_KEYPAD);
-		}
-	}
+      if (key_intersection)
+        raise_interrupt(IRQ_KEYPAD);
+    }
+  }
 }
 
 u32 key = 0;
@@ -56,55 +56,53 @@ typedef enum
   BUTTON_HELD_REPEAT
 } button_repeat_state_type;
 
-
 // These define autorepeat values (in microseconds), tweak as necessary.
 
-#define BUTTON_REPEAT_START    200000
+#define BUTTON_REPEAT_START 200000
 #define BUTTON_REPEAT_CONTINUE 50000
 
 button_repeat_state_type button_repeat_state = BUTTON_NOT_HELD;
 u32 button_repeat = 0;
 gui_action_type cursor_repeat = CURSOR_NONE;
 
-
 #ifdef PC_BUILD
 u32 gamepad_config_map[12] =
-{
-  BUTTON_ID_UP,                 // Analog up
-  BUTTON_ID_DOWN,               // Analog down
-  BUTTON_ID_LEFT,               // Analog left
-  BUTTON_ID_RIGHT,               // Analog right
-  BUTTON_ID_START,                  // Circle
-  BUTTON_ID_SELECT,                  // Cross
-  BUTTON_ID_L,                  // Ltrigger
-  BUTTON_ID_R,                  // Rtrigger
-  BUTTON_ID_A,              // Square
-  BUTTON_ID_B,             // Select
-  BUTTON_ID_L,              // Square
-  BUTTON_ID_R             // Select
+    {
+        BUTTON_ID_UP,     // Analog up
+        BUTTON_ID_DOWN,   // Analog down
+        BUTTON_ID_LEFT,   // Analog left
+        BUTTON_ID_RIGHT,  // Analog right
+        BUTTON_ID_START,  // Circle
+        BUTTON_ID_SELECT, // Cross
+        BUTTON_ID_L,      // Ltrigger
+        BUTTON_ID_R,      // Rtrigger
+        BUTTON_ID_A,      // Square
+        BUTTON_ID_B,      // Select
+        BUTTON_ID_L,      // Square
+        BUTTON_ID_R       // Select
 };
 #endif
 
 #ifdef PSP_BUILD
 
 u32 gamepad_config_map[16] =
-{
-  BUTTON_ID_MENU,               // Triangle
-  BUTTON_ID_A,                  // Circle
-  BUTTON_ID_B,                  // Cross
-  BUTTON_ID_START,              // Square
-  BUTTON_ID_L,                  // Ltrigger
-  BUTTON_ID_R,                  // Rtrigger
-  BUTTON_ID_DOWN,               // Down
-  BUTTON_ID_LEFT,               // Left
-  BUTTON_ID_UP,                 // Up
-  BUTTON_ID_RIGHT,              // Right
-  BUTTON_ID_SELECT,             // Select
-  BUTTON_ID_START,              // Start
-  BUTTON_ID_UP,                 // Analog up
-  BUTTON_ID_DOWN,               // Analog down
-  BUTTON_ID_LEFT,               // Analog left
-  BUTTON_ID_RIGHT               // Analog right
+    {
+        BUTTON_ID_MENU,   // Triangle
+        BUTTON_ID_A,      // Circle
+        BUTTON_ID_B,      // Cross
+        BUTTON_ID_START,  // Square
+        BUTTON_ID_L,      // Ltrigger
+        BUTTON_ID_R,      // Rtrigger
+        BUTTON_ID_DOWN,   // Down
+        BUTTON_ID_LEFT,   // Left
+        BUTTON_ID_UP,     // Up
+        BUTTON_ID_RIGHT,  // Right
+        BUTTON_ID_SELECT, // Select
+        BUTTON_ID_START,  // Start
+        BUTTON_ID_UP,     // Analog up
+        BUTTON_ID_DOWN,   // Analog down
+        BUTTON_ID_LEFT,   // Analog left
+        BUTTON_ID_RIGHT   // Analog right
 };
 
 #define PSP_ALL_BUTTON_MASK 0xFFFF
@@ -125,31 +123,31 @@ gui_action_type get_gui_input()
   new_buttons = (last_buttons ^ ctrl_data.Buttons) & ctrl_data.Buttons;
   last_buttons = ctrl_data.Buttons;
 
-  if(new_buttons & PSP_CTRL_LEFT)
+  if (new_buttons & PSP_CTRL_LEFT)
     new_button = CURSOR_LEFT;
 
-  if(new_buttons & PSP_CTRL_RIGHT)
+  if (new_buttons & PSP_CTRL_RIGHT)
     new_button = CURSOR_RIGHT;
 
-  if(new_buttons & PSP_CTRL_UP)
+  if (new_buttons & PSP_CTRL_UP)
     new_button = CURSOR_UP;
 
-  if(new_buttons & PSP_CTRL_DOWN)
+  if (new_buttons & PSP_CTRL_DOWN)
     new_button = CURSOR_DOWN;
 
-  if(new_buttons & PSP_CTRL_START)
+  if (new_buttons & PSP_CTRL_START)
     new_button = CURSOR_SELECT;
 
-  if(new_buttons & PSP_CTRL_CIRCLE)
+  if (new_buttons & PSP_CTRL_CIRCLE)
     new_button = CURSOR_SELECT;
 
-  if(new_buttons & PSP_CTRL_CROSS)
+  if (new_buttons & PSP_CTRL_CROSS)
     new_button = CURSOR_EXIT;
 
-  if(new_buttons & PSP_CTRL_SQUARE)
+  if (new_buttons & PSP_CTRL_SQUARE)
     new_button = CURSOR_BACK;
 
-  if(new_button != CURSOR_NONE)
+  if (new_button != CURSOR_NONE)
   {
     get_ticks_us(&button_repeat_timestamp);
     button_repeat_state = BUTTON_HELD_INITIAL;
@@ -158,15 +156,15 @@ gui_action_type get_gui_input()
   }
   else
   {
-    if(ctrl_data.Buttons & button_repeat)
+    if (ctrl_data.Buttons & button_repeat)
     {
       u64 new_ticks;
       get_ticks_us(&new_ticks);
 
-      if(button_repeat_state == BUTTON_HELD_INITIAL)
+      if (button_repeat_state == BUTTON_HELD_INITIAL)
       {
-        if((new_ticks - button_repeat_timestamp) >
-         BUTTON_REPEAT_START)
+        if ((new_ticks - button_repeat_timestamp) >
+            BUTTON_REPEAT_START)
         {
           new_button = cursor_repeat;
           button_repeat_timestamp = new_ticks;
@@ -174,10 +172,10 @@ gui_action_type get_gui_input()
         }
       }
 
-      if(button_repeat_state == BUTTON_HELD_REPEAT)
+      if (button_repeat_state == BUTTON_HELD_REPEAT)
       {
-        if((new_ticks - button_repeat_timestamp) >
-         BUTTON_REPEAT_CONTINUE)
+        if ((new_ticks - button_repeat_timestamp) >
+            BUTTON_REPEAT_CONTINUE)
         {
           new_button = cursor_repeat;
           button_repeat_timestamp = new_ticks;
@@ -189,53 +187,51 @@ gui_action_type get_gui_input()
   return new_button;
 }
 
-#define PSP_CTRL_ANALOG_UP    (1 << 28)
-#define PSP_CTRL_ANALOG_DOWN  (1 << 29)
-#define PSP_CTRL_ANALOG_LEFT  (1 << 30)
+#define PSP_CTRL_ANALOG_UP (1 << 28)
+#define PSP_CTRL_ANALOG_DOWN (1 << 29)
+#define PSP_CTRL_ANALOG_LEFT (1 << 30)
 #define PSP_CTRL_ANALOG_RIGHT (1 << 31)
 
 u32 button_psp_mask_to_config[] =
-{
-  PSP_CTRL_TRIANGLE,
-  PSP_CTRL_CIRCLE,
-  PSP_CTRL_CROSS,
-  PSP_CTRL_SQUARE,
-  PSP_CTRL_LTRIGGER,
-  PSP_CTRL_RTRIGGER,
-  PSP_CTRL_DOWN,
-  PSP_CTRL_LEFT,
-  PSP_CTRL_UP,
-  PSP_CTRL_RIGHT,
-  PSP_CTRL_SELECT,
-  PSP_CTRL_START,
-  PSP_CTRL_ANALOG_UP,
-  PSP_CTRL_ANALOG_DOWN,
-  PSP_CTRL_ANALOG_LEFT,
-  PSP_CTRL_ANALOG_RIGHT
-};
+    {
+        PSP_CTRL_TRIANGLE,
+        PSP_CTRL_CIRCLE,
+        PSP_CTRL_CROSS,
+        PSP_CTRL_SQUARE,
+        PSP_CTRL_LTRIGGER,
+        PSP_CTRL_RTRIGGER,
+        PSP_CTRL_DOWN,
+        PSP_CTRL_LEFT,
+        PSP_CTRL_UP,
+        PSP_CTRL_RIGHT,
+        PSP_CTRL_SELECT,
+        PSP_CTRL_START,
+        PSP_CTRL_ANALOG_UP,
+        PSP_CTRL_ANALOG_DOWN,
+        PSP_CTRL_ANALOG_LEFT,
+        PSP_CTRL_ANALOG_RIGHT};
 
 u32 button_id_to_gba_mask[] =
-{
-  BUTTON_UP,
-  BUTTON_DOWN,
-  BUTTON_LEFT,
-  BUTTON_RIGHT,
-  BUTTON_A,
-  BUTTON_B,
-  BUTTON_L,
-  BUTTON_R,
-  BUTTON_START,
-  BUTTON_SELECT,
-  BUTTON_NONE,
-  BUTTON_NONE,
-  BUTTON_NONE,
-  BUTTON_NONE
-};
+    {
+        BUTTON_UP,
+        BUTTON_DOWN,
+        BUTTON_LEFT,
+        BUTTON_RIGHT,
+        BUTTON_A,
+        BUTTON_B,
+        BUTTON_L,
+        BUTTON_R,
+        BUTTON_START,
+        BUTTON_SELECT,
+        BUTTON_NONE,
+        BUTTON_NONE,
+        BUTTON_NONE,
+        BUTTON_NONE};
 
 gui_action_type get_gui_input_fs_hold(u32 button_id)
 {
   gui_action_type new_button = get_gui_input();
-  if((last_buttons & button_psp_mask_to_config[button_id]) == 0)
+  if ((last_buttons & button_psp_mask_to_config[button_id]) == 0)
     return CURSOR_BACK;
 
   return new_button;
@@ -258,96 +254,96 @@ u32 update_input()
 
   buttons = ctrl_data.Buttons;
 
-  if(global_enable_analog)
+  if (global_enable_analog)
   {
-    if(ctrl_data.Lx < analog_sensitivity)
+    if (ctrl_data.Lx < analog_sensitivity)
       buttons |= PSP_CTRL_ANALOG_LEFT;
 
-    if(ctrl_data.Lx > inv_analog_sensitivity)
+    if (ctrl_data.Lx > inv_analog_sensitivity)
       buttons |= PSP_CTRL_ANALOG_RIGHT;
 
-    if(ctrl_data.Ly < analog_sensitivity)
+    if (ctrl_data.Ly < analog_sensitivity)
       buttons |= PSP_CTRL_ANALOG_UP;
 
-    if(ctrl_data.Ly > inv_analog_sensitivity)
+    if (ctrl_data.Ly > inv_analog_sensitivity)
       buttons |= PSP_CTRL_ANALOG_DOWN;
   }
 
   non_repeat_buttons = (last_buttons ^ buttons) & buttons;
   last_buttons = buttons;
 
-  for(i = 0; i < 16; i++)
+  for (i = 0; i < 16; i++)
   {
-    if(non_repeat_buttons & button_psp_mask_to_config[i])
+    if (non_repeat_buttons & button_psp_mask_to_config[i])
       button_id = gamepad_config_map[i];
     else
       button_id = BUTTON_ID_NONE;
 
-    switch(button_id)
+    switch (button_id)
     {
-      case BUTTON_ID_MENU:
-      {
-        u16 *screen_copy = copy_screen();
-        u32 ret_val = menu(screen_copy);
-        free(screen_copy);
+    case BUTTON_ID_MENU:
+    {
+      u16 *screen_copy = copy_screen();
+      u32 ret_val = menu(screen_copy);
+      free(screen_copy);
 
-        return ret_val;
-      }
-
-      case BUTTON_ID_LOADSTATE:
-      {
-        u8 current_savestate_filename[512];
-        get_savestate_filename_noshot(savestate_slot,
-         current_savestate_filename);
-        load_state(current_savestate_filename);
-        return 1;
-      }
-
-      case BUTTON_ID_SAVESTATE:
-      {
-        u8 current_savestate_filename[512];
-        u16 *current_screen = copy_screen();
-        get_savestate_filename_noshot(savestate_slot,
-         current_savestate_filename);
-        save_state(current_savestate_filename, current_screen);
-        free(current_screen);
-        return 0;
-      }
-
-      case BUTTON_ID_FASTFORWARD:
-        print_string("FASTFORWARD", 0xFFFF, 0x0000, 0, 50);
-        synchronize_flag ^= 1;
-        return 0;
+      return ret_val;
     }
 
-    if(buttons & button_psp_mask_to_config[i])
+    case BUTTON_ID_LOADSTATE:
+    {
+      u8 current_savestate_filename[512];
+      get_savestate_filename_noshot(savestate_slot,
+                                    current_savestate_filename);
+      load_state(current_savestate_filename);
+      return 1;
+    }
+
+    case BUTTON_ID_SAVESTATE:
+    {
+      u8 current_savestate_filename[512];
+      u16 *current_screen = copy_screen();
+      get_savestate_filename_noshot(savestate_slot,
+                                    current_savestate_filename);
+      save_state(current_savestate_filename, current_screen);
+      free(current_screen);
+      return 0;
+    }
+
+    case BUTTON_ID_FASTFORWARD:
+      print_string("FASTFORWARD", 0xFFFF, 0x0000, 0, 50);
+      synchronize_flag ^= 1;
+      return 0;
+    }
+
+    if (buttons & button_psp_mask_to_config[i])
     {
       button_id = gamepad_config_map[i];
-      if(button_id < BUTTON_ID_MENU)
+      if (button_id < BUTTON_ID_MENU)
       {
         new_key |= button_id_to_gba_mask[button_id];
       }
       else
 
-      if((button_id >= BUTTON_ID_RAPIDFIRE_A) &&
-       (button_id <= BUTTON_ID_RAPIDFIRE_L))
+          if ((button_id >= BUTTON_ID_RAPIDFIRE_A) &&
+              (button_id <= BUTTON_ID_RAPIDFIRE_L))
       {
         rapidfire_flag ^= 1;
-        if(rapidfire_flag)
+        if (rapidfire_flag)
         {
           new_key |= button_id_to_gba_mask[button_id -
-           BUTTON_ID_RAPIDFIRE_A + BUTTON_ID_A];
+                                           BUTTON_ID_RAPIDFIRE_A + BUTTON_ID_A];
         }
         else
         {
           new_key &= ~button_id_to_gba_mask[button_id -
-           BUTTON_ID_RAPIDFIRE_A + BUTTON_ID_A];
+                                            BUTTON_ID_RAPIDFIRE_A + BUTTON_ID_A];
         }
       }
     }
   }
 
-  if((new_key | key) != key)
+  if ((new_key | key) != key)
     trigger_key(new_key);
 
   key = new_key;
@@ -364,7 +360,6 @@ void init_input()
 }
 
 #endif
-
 
 #if defined(GP2X_BUILD) || defined(PND_BUILD)
 
@@ -385,7 +380,7 @@ gui_action_type get_gui_input()
   last_buttons = buttons;
 
   new_button = gpsp_plat_buttons_to_cursor(new_buttons);
-  if(new_button != CURSOR_NONE)
+  if (new_button != CURSOR_NONE)
   {
     get_ticks_us(&button_repeat_timestamp);
     button_repeat_state = BUTTON_HELD_INITIAL;
@@ -394,15 +389,15 @@ gui_action_type get_gui_input()
   }
   else
   {
-    if(buttons & button_repeat)
+    if (buttons & button_repeat)
     {
       u64 new_ticks;
       get_ticks_us(&new_ticks);
 
-      if(button_repeat_state == BUTTON_HELD_INITIAL)
+      if (button_repeat_state == BUTTON_HELD_INITIAL)
       {
-        if((new_ticks - button_repeat_timestamp) >
-         BUTTON_REPEAT_START)
+        if ((new_ticks - button_repeat_timestamp) >
+            BUTTON_REPEAT_START)
         {
           new_button = cursor_repeat;
           button_repeat_timestamp = new_ticks;
@@ -410,10 +405,10 @@ gui_action_type get_gui_input()
         }
       }
 
-      if(button_repeat_state == BUTTON_HELD_REPEAT)
+      if (button_repeat_state == BUTTON_HELD_REPEAT)
       {
-        if((new_ticks - button_repeat_timestamp) >
-         BUTTON_REPEAT_CONTINUE)
+        if ((new_ticks - button_repeat_timestamp) >
+            BUTTON_REPEAT_CONTINUE)
         {
           new_button = cursor_repeat;
           button_repeat_timestamp = new_ticks;
@@ -426,22 +421,21 @@ gui_action_type get_gui_input()
 }
 
 u32 button_id_to_gba_mask[] =
-{
-  BUTTON_UP,
-  BUTTON_DOWN,
-  BUTTON_LEFT,
-  BUTTON_RIGHT,
-  BUTTON_A,
-  BUTTON_B,
-  BUTTON_L,
-  BUTTON_R,
-  BUTTON_START,
-  BUTTON_SELECT,
-  BUTTON_NONE,
-  BUTTON_NONE,
-  BUTTON_NONE,
-  BUTTON_NONE
-};
+    {
+        BUTTON_UP,
+        BUTTON_DOWN,
+        BUTTON_LEFT,
+        BUTTON_RIGHT,
+        BUTTON_A,
+        BUTTON_B,
+        BUTTON_L,
+        BUTTON_R,
+        BUTTON_START,
+        BUTTON_SELECT,
+        BUTTON_NONE,
+        BUTTON_NONE,
+        BUTTON_NONE,
+        BUTTON_NONE};
 
 u32 update_input()
 {
@@ -454,14 +448,14 @@ u32 update_input()
   u32 i;
 
 #ifdef GP2X_BUILD
-  if((buttons & GP2X_VOL_DOWN) && (buttons & GP2X_VOL_UP))
+  if ((buttons & GP2X_VOL_DOWN) && (buttons & GP2X_VOL_UP))
   {
     buttons &= ~(GP2X_VOL_DOWN | GP2X_VOL_UP);
     buttons |= GP2X_VOL_MIDDLE;
   }
 
   /* for Wiz */
-  if((buttons & GP2X_VOL_DOWN) && (buttons & GP2X_SELECT))
+  if ((buttons & GP2X_VOL_DOWN) && (buttons & GP2X_SELECT))
   {
     buttons &= ~(GP2X_VOL_DOWN | GP2X_SELECT);
     buttons |= GP2X_VOL_MIDDLE;
@@ -473,91 +467,91 @@ u32 update_input()
   handled_buttons = (last_buttons ^ buttons) & buttons;
   last_buttons = buttons;
 
-  for(i = 0; i < PLAT_BUTTON_COUNT; i++)
+  for (i = 0; i < PLAT_BUTTON_COUNT; i++)
   {
-    if(handled_buttons & button_plat_mask_to_config[i])
+    if (handled_buttons & button_plat_mask_to_config[i])
       button_id = gamepad_config_map[i];
     else
       button_id = BUTTON_ID_NONE;
 
-    switch(button_id)
+    switch (button_id)
     {
-      case BUTTON_ID_MENU:
-      {
-        u16 *screen_copy = copy_screen();
-        u32 ret_val = menu(screen_copy);
-        free(screen_copy);
+    case BUTTON_ID_MENU:
+    {
+      u16 *screen_copy = copy_screen();
+      u32 ret_val = menu(screen_copy);
+      free(screen_copy);
 
-        return ret_val;
-      }
-
-      case BUTTON_ID_LOADSTATE:
-      {
-        char current_savestate_filename[512];
-        get_savestate_filename_noshot(savestate_slot,
-         current_savestate_filename);
-        load_state(current_savestate_filename);
-        return 1;
-      }
-
-      case BUTTON_ID_SAVESTATE:
-      {
-        char current_savestate_filename[512];
-        u16 *current_screen = copy_screen();
-        get_savestate_filename_noshot(savestate_slot,
-         current_savestate_filename);
-        save_state(current_savestate_filename, current_screen);
-        free(current_screen);
-        return 0;
-      }
-
-      case BUTTON_ID_FASTFORWARD:
-        synchronize_flag ^= 1;
-        return 0;
-
-#ifdef GP2X_BUILD
-      case BUTTON_ID_VOLUP:
-        gp2x_sound_volume(1);
-        break;
-
-      case BUTTON_ID_VOLDOWN:
-        gp2x_sound_volume(0);
-        break;
-#endif
-
-      case BUTTON_ID_FPS:
-        fps_debug ^= 1;
-        break;
+      return ret_val;
     }
 
-    if(buttons & button_plat_mask_to_config[i])
+    case BUTTON_ID_LOADSTATE:
+    {
+      char current_savestate_filename[512];
+      get_savestate_filename_noshot(savestate_slot,
+                                    current_savestate_filename);
+      load_state(current_savestate_filename);
+      return 1;
+    }
+
+    case BUTTON_ID_SAVESTATE:
+    {
+      char current_savestate_filename[512];
+      u16 *current_screen = copy_screen();
+      get_savestate_filename_noshot(savestate_slot,
+                                    current_savestate_filename);
+      save_state(current_savestate_filename, current_screen);
+      free(current_screen);
+      return 0;
+    }
+
+    case BUTTON_ID_FASTFORWARD:
+      synchronize_flag ^= 1;
+      return 0;
+
+#ifdef GP2X_BUILD
+    case BUTTON_ID_VOLUP:
+      gp2x_sound_volume(1);
+      break;
+
+    case BUTTON_ID_VOLDOWN:
+      gp2x_sound_volume(0);
+      break;
+#endif
+
+    case BUTTON_ID_FPS:
+      fps_debug ^= 1;
+      break;
+    }
+
+    if (buttons & button_plat_mask_to_config[i])
     {
       button_id = gamepad_config_map[i];
-      if(button_id < BUTTON_ID_MENU)
+      if (button_id < BUTTON_ID_MENU)
       {
         new_key |= button_id_to_gba_mask[button_id];
       }
       else
 
-      if((button_id >= BUTTON_ID_RAPIDFIRE_A) &&
-       (button_id <= BUTTON_ID_RAPIDFIRE_L))
+          if ((button_id >= BUTTON_ID_RAPIDFIRE_A) &&
+              (button_id <= BUTTON_ID_RAPIDFIRE_L))
       {
         rapidfire_flag ^= 1;
-        if(rapidfire_flag)
+        if (rapidfire_flag)
         {
           new_key |= button_id_to_gba_mask[button_id -
-           BUTTON_ID_RAPIDFIRE_A + BUTTON_ID_A];
+                                           BUTTON_ID_RAPIDFIRE_A + BUTTON_ID_A];
         }
         else
         {
           new_key &= ~button_id_to_gba_mask[button_id -
-           BUTTON_ID_RAPIDFIRE_A + BUTTON_ID_A];
+                                            BUTTON_ID_RAPIDFIRE_A + BUTTON_ID_A];
         }
       }
     }
   }
 
-  if((new_key | key) != key)
+  if ((new_key | key) != key)
     trigger_key(new_key);
 
   key = new_key;
@@ -569,50 +563,48 @@ u32 update_input()
 
 void init_input()
 {
-
 }
 
 #endif
-
 
 #if defined(RPI_BUILD)
 
 u32 key_map(SDLKey key_sym)
 {
-  switch(key_sym)
+  switch (key_sym)
   {
-    case SDLK_a:
-      return BUTTON_L;
+  case SDLK_a:
+    return BUTTON_L;
 
-    case SDLK_s:
-      return BUTTON_R;
+  case SDLK_s:
+    return BUTTON_R;
 
-    case SDLK_DOWN:
-      return BUTTON_DOWN;
+  case SDLK_DOWN:
+    return BUTTON_DOWN;
 
-    case SDLK_UP:
-      return BUTTON_UP;
+  case SDLK_UP:
+    return BUTTON_UP;
 
-    case SDLK_LEFT:
-      return BUTTON_LEFT;
+  case SDLK_LEFT:
+    return BUTTON_LEFT;
 
-    case SDLK_RIGHT:
-      return BUTTON_RIGHT;
+  case SDLK_RIGHT:
+    return BUTTON_RIGHT;
 
-    case SDLK_RETURN:
-      return BUTTON_START;
+  case SDLK_RETURN:
+    return BUTTON_START;
 
-    case SDLK_BACKSPACE:
-      return BUTTON_SELECT;
+  case SDLK_BACKSPACE:
+    return BUTTON_SELECT;
 
-    case SDLK_x:
-      return BUTTON_B;
+  case SDLK_x:
+    return BUTTON_B;
 
-    case SDLK_z:
-      return BUTTON_A;
+  case SDLK_z:
+    return BUTTON_A;
 
-    default:
-      return BUTTON_NONE;
+  default:
+    return BUTTON_NONE;
   }
 }
 #endif
@@ -623,94 +615,94 @@ extern u32 gamepad_config_line_to_button[];
 
 uint32_t tokey(uint32_t i)
 {
-	switch(gamepad_config_map[gamepad_config_line_to_button[i]])
-	{
-		// UP
-		case 0:
-			return BUTTON_UP;
-		break;
-		// LEFT
-		case 1:
-			return BUTTON_LEFT;
-		break;
-		// DOWN
-		case 2:
-			return BUTTON_DOWN;
-		break;
-		// RIGHT
-		case 3:
-			return BUTTON_RIGHT;
-		break;
-		// A
-		case 4:
-			return BUTTON_A;
-		break;
-		// B
-		case 5:
-			return BUTTON_B;
-		break;
-		// L
-		case 6:
-			return BUTTON_L;
-		break;
-		// R
-		case 7:
-			return BUTTON_R;
-		break;
-		// Start
-		case 8:
-			return BUTTON_START;
-		break;
-		// Select
-		case 9:
-			return BUTTON_SELECT;
-		break;
-	}
-	return 0;	
+  switch (gamepad_config_map[gamepad_config_line_to_button[i]])
+  {
+  // UP
+  case 0:
+    return BUTTON_UP;
+    break;
+  // LEFT
+  case 1:
+    return BUTTON_LEFT;
+    break;
+  // DOWN
+  case 2:
+    return BUTTON_DOWN;
+    break;
+  // RIGHT
+  case 3:
+    return BUTTON_RIGHT;
+    break;
+  // A
+  case 4:
+    return BUTTON_A;
+    break;
+  // B
+  case 5:
+    return BUTTON_B;
+    break;
+  // L
+  case 6:
+    return BUTTON_L;
+    break;
+  // R
+  case 7:
+    return BUTTON_R;
+    break;
+  // Start
+  case 8:
+    return BUTTON_START;
+    break;
+  // Select
+  case 9:
+    return BUTTON_SELECT;
+    break;
+  }
+  return 0;
 }
 
 u32 key_map(u32 key_sym)
 {
-  switch(key_sym)
+  switch (key_sym)
   {
-    case SDLK_UP:
-      return tokey(0);
-      
-    case SDLK_DOWN:
-      return tokey(1);
+  case SDLK_UP:
+    return tokey(0);
 
-    case SDLK_LEFT:
-      return tokey(2);
+  case SDLK_DOWN:
+    return tokey(1);
 
-    case SDLK_RIGHT:
-      return tokey(3);
-      
-    case SDLK_LCTRL:
-      return tokey(4);
+  case SDLK_LEFT:
+    return tokey(2);
 
-    case SDLK_LALT:
-      return tokey(5);
-      
-    case SDLK_LSHIFT:
-      return tokey(6);
+  case SDLK_RIGHT:
+    return tokey(3);
 
-    case SDLK_SPACE:
-      return tokey(7);
-      
-    case SDLK_TAB:
-      return tokey(8);
+  case SDLK_LCTRL:
+    return tokey(4);
 
-    case SDLK_BACKSPACE:
-      return tokey(9);
+  case SDLK_LALT:
+    return tokey(5);
 
-    case SDLK_RETURN:
-      return tokey(10);
+  case SDLK_LSHIFT:
+    return tokey(6);
 
-    case SDLK_ESCAPE:
-      return tokey(11);
+  case SDLK_SPACE:
+    return tokey(7);
 
-    default:
-      return BUTTON_NONE;
+  case SDLK_TAB:
+    return tokey(8);
+
+  case SDLK_BACKSPACE:
+    return tokey(9);
+
+  case SDLK_RETURN:
+    return tokey(10);
+
+  case SDLK_ESCAPE:
+    return tokey(11);
+
+  default:
+    return BUTTON_NONE;
   }
 }
 
@@ -719,28 +711,28 @@ u32 key_map(u32 key_sym)
 
 u32 joy_map(u32 button)
 {
-  switch(button)
+  switch (button)
   {
-    case 4:
-      return BUTTON_L;
+  case 4:
+    return BUTTON_L;
 
-    case 5:
-      return BUTTON_R;
+  case 5:
+    return BUTTON_R;
 
-    case 2:
-      return BUTTON_START;
+  case 2:
+    return BUTTON_START;
 
-    case 3:
-      return BUTTON_SELECT;
+  case 3:
+    return BUTTON_SELECT;
 
-    case 1:
-      return BUTTON_B;
+  case 1:
+    return BUTTON_B;
 
-    case 0:
-      return BUTTON_A;
+  case 0:
+    return BUTTON_A;
 
-    default:
-      return BUTTON_NONE;
+  default:
+    return BUTTON_NONE;
   }
 }
 
@@ -751,47 +743,49 @@ gui_action_type get_gui_input()
 
   delay_us(30000);
 
-  while(SDL_PollEvent(&event))
-  { 
-    switch(event.type)
+  while (SDL_PollEvent(&event))
+  {
+    switch (event.type)
     {
-      case SDL_QUIT:
-        quit();
+    case SDL_QUIT:
+      quit();
 
-      case SDL_KEYDOWN:
+    case SDL_KEYDOWN:
+    {
+      switch (event.key.keysym.sym)
       {
-        switch(event.key.keysym.sym)
-        {
-          case SDLK_ESCAPE:
-            gui_action = CURSOR_EXIT;
-            break;
+      case SDLK_ESCAPE:
+      case SDLK_LALT:
+        gui_action = CURSOR_EXIT;
+        break;
 
-          case SDLK_DOWN:
-            gui_action = CURSOR_DOWN;
-            break;
+      case SDLK_DOWN:
+        gui_action = CURSOR_DOWN;
+        break;
 
-          case SDLK_UP:
-            gui_action = CURSOR_UP;
-            break;
+      case SDLK_UP:
+        gui_action = CURSOR_UP;
+        break;
 
-          case SDLK_LEFT:
-            gui_action = CURSOR_LEFT;
-            break;
+      case SDLK_LEFT:
+        gui_action = CURSOR_LEFT;
+        break;
 
-          case SDLK_RIGHT:
-            gui_action = CURSOR_RIGHT;
-            break;
+      case SDLK_RIGHT:
+        gui_action = CURSOR_RIGHT;
+        break;
 
-          case SDLK_RETURN:
-          case SDLK_LCTRL:
-            gui_action = CURSOR_SELECT;
-            break;
+      case SDLK_RETURN:
+      case SDLK_LCTRL:
+        gui_action = CURSOR_SELECT;
+        break;
 
-          case SDLK_LALT:
-            gui_action = CURSOR_BACK;
-            break;
-	 default:
-	    break;
+      case SDLK_SPACE:
+        //case SDLK_LALT:
+        gui_action = CURSOR_BACK;
+        break;
+      default:
+        break;
       }
     }
     break;
@@ -800,37 +794,43 @@ gui_action_type get_gui_input()
     {
       switch (event.jbutton.button)
       {
-	case 2:
-            gui_action = CURSOR_BACK;
-            break;
+      case 2:
+        gui_action = CURSOR_BACK;
+        break;
 
-	case 1:
-            gui_action = CURSOR_EXIT;
-            break;
+      case 1:
+        gui_action = CURSOR_EXIT;
+        break;
 
-	case 0:
-	    gui_action = CURSOR_SELECT;
-    	    break;
-	}
-     }
-     break;
+      case 0:
+        gui_action = CURSOR_SELECT;
+        break;
+      }
+    }
+    break;
 
-     case SDL_JOYAXISMOTION:
-     {
-         if (event.jaxis.axis==0) { //Left-Right
-            if (event.jaxis.value < -3200) gui_action = CURSOR_LEFT;
-        	else if (event.jaxis.value > 3200) gui_action = CURSOR_RIGHT;
-         }
-         if (event.jaxis.axis==1) {  //Up-Down
-            if (event.jaxis.value < -3200) gui_action = CURSOR_UP;
-        	else if (event.jaxis.value > 3200) gui_action = CURSOR_DOWN;
-         }
+    case SDL_JOYAXISMOTION:
+    {
+      if (event.jaxis.axis == 0)
+      { //Left-Right
+        if (event.jaxis.value < -3200)
+          gui_action = CURSOR_LEFT;
+        else if (event.jaxis.value > 3200)
+          gui_action = CURSOR_RIGHT;
+      }
+      if (event.jaxis.axis == 1)
+      { //Up-Down
+        if (event.jaxis.value < -3200)
+          gui_action = CURSOR_UP;
+        else if (event.jaxis.value > 3200)
+          gui_action = CURSOR_DOWN;
+      }
     }
     break;
 
 #endif
     default:
-        break;
+      break;
     }
   }
   return gui_action;
@@ -839,82 +839,78 @@ gui_action_type get_gui_input()
 u32 update_input()
 {
   SDL_Event event;
-  
+
   io_registers[REG_P1] = (~key) & 0x3FF;
-  
-  while(SDL_PollEvent(&event))
+
+  while (SDL_PollEvent(&event))
   {
-    switch(event.type)
+    switch (event.type)
     {
-      case SDL_QUIT:
-		{
-        quit();
-		}
-      case SDL_KEYDOWN:
-      {
-		  /* Disable Exiting for the bittboy, we will quit from the menu instead */
-        /*if(event.key.keysym.sym == SDLK_ESCAPE)
+    case SDL_QUIT:
+    {
+      quit();
+    }
+    case SDL_KEYDOWN:
+    {
+      /* Disable Exiting for the bittboy, we will quit from the menu instead */
+      /*if(event.key.keysym.sym == SDLK_ESCAPE)
         {
           quit();
         }*/
 #ifdef PC_BUILD
-        if(event.key.keysym.sym == SDLK_RCTRL)
+      if (event.key.keysym.sym == SDLK_RCTRL)
 #else
-        if(event.key.keysym.sym == SDLK_F10)
+      if (event.key.keysym.sym == SDLK_F10)
 #endif
-        {
-          u16 *screen_copy = copy_screen();
-          u32 ret_val = menu(screen_copy);
-          free(screen_copy);
-
-          return ret_val;
-        }
-        else
-        if(event.key.keysym.sym == SDLK_F5)
-        {
-          char current_savestate_filename[512];
-          u16 *current_screen = copy_screen();
-          get_savestate_filename_noshot(savestate_slot,
-           current_savestate_filename);
-          save_state(current_savestate_filename, current_screen);
-          free(current_screen);
-        }
-        else
-
-        if(event.key.keysym.sym == SDLK_F7)
-        {
-          char current_savestate_filename[512];
-          get_savestate_filename_noshot(savestate_slot,
-           current_savestate_filename);
-          load_state(current_savestate_filename);
-          debug_on();
-          return 1;
-        }
-        else
-
-        if(event.key.keysym.sym == SDLK_BACKQUOTE)
-        {
-          synchronize_flag ^= 1;
-        }
-        else
-        {
-          key |= key_map(event.key.keysym.sym);
-          trigger_key(key);
-          
-        }
-
-        break;
-      }
-
-      case SDL_KEYUP:
       {
-        key &= ~(key_map(event.key.keysym.sym));
-        break;
+        u16 *screen_copy = copy_screen();
+        u32 ret_val = menu(screen_copy);
+        free(screen_copy);
+
+        return ret_val;
       }
+      else if (event.key.keysym.sym == SDLK_F5)
+      {
+        char current_savestate_filename[512];
+        u16 *current_screen = copy_screen();
+        get_savestate_filename_noshot(savestate_slot,
+                                      current_savestate_filename);
+        save_state(current_savestate_filename, current_screen);
+        free(current_screen);
+      }
+      else
+
+          if (event.key.keysym.sym == SDLK_F7)
+      {
+        char current_savestate_filename[512];
+        get_savestate_filename_noshot(savestate_slot,
+                                      current_savestate_filename);
+        load_state(current_savestate_filename);
+        debug_on();
+        return 1;
+      }
+      else
+
+          if (event.key.keysym.sym == SDLK_BACKQUOTE)
+      {
+        synchronize_flag ^= 1;
+      }
+      else
+      {
+        key |= key_map(event.key.keysym.sym);
+        trigger_key(key);
+      }
+
+      break;
+    }
+
+    case SDL_KEYUP:
+    {
+      key &= ~(key_map(event.key.keysym.sym));
+      break;
+    }
     }
   }
-
-
 
   return 0;
 }
@@ -923,7 +919,7 @@ void init_input()
 {
   u32 joystick_count = SDL_NumJoysticks();
 
-  if(joystick_count > 0)
+  if (joystick_count > 0)
   {
     SDL_JoystickOpen(0);
     SDL_JoystickEventState(SDL_ENABLE);
@@ -932,13 +928,11 @@ void init_input()
 
 #endif
 
-
-#define input_savestate_builder(type)                                         \
-void input_##type##_savestate(file_tag_type savestate_file)                   \
-{                                                                             \
-  file_##type##_variable(savestate_file, key);                                \
-}                                                                             \
+#define input_savestate_builder(type)                         \
+  void input_##type##_savestate(file_tag_type savestate_file) \
+  {                                                           \
+    file_##type##_variable(savestate_file, key);              \
+  }
 
 input_savestate_builder(read);
 input_savestate_builder(write_mem);
-

@@ -7,7 +7,7 @@
                 "/opt/miyoo/arm-buildroot-linux-musleabi/sysroot/usr/include",
                 "/opt/miyoo/arm-buildroot-linux-musleabi/sysroot/usr/include/SDL"
             ],
-            "defines": ["BITTBOY"],
+            "defines": ["ARM_ARCH","PC_BUILD","BITTBOY"],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c11",
             "cppStandard": "c++17",
