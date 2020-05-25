@@ -28,7 +28,7 @@ gbc_sound_struct gbc_sound_channel[4];
 #ifdef RPI_BUILD
 u32 sound_frequency = 22050;
 #else
-u32 sound_frequency = 48000;
+u32 sound_frequency = 44100;
 #endif
 
 SDL_mutex *sound_mutex;

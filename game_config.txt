@@ -413,12 +413,22 @@ game_code = BRLE
 vender_code = AF
 idle_loop_eliminate_target = 0800041a
 
+# Golden Sun (U)
+game_name = Golden_Sun_A
+game_code = AGSE
+vender_code = 01
+translation_gate_target = 03000820
+translation_gate_target = 030009ac
+translation_gate_target = 03007dac
+
 # Golden Sun: The Lost Age (U)
 # Probably the most horrifically coded GBA game in existence.
 game_name = GOLDEN_SUN_B
 game_code = AGFE
 vender_code = 01
 idle_loop_eliminate_target = 08013542
+translation_gate_target = 030009ac
+#translation_gate_target = 03007d70
 
 # Mario Party Advance (U)
 game_name = MARIOPARTYUS
