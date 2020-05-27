@@ -16,7 +16,7 @@ BIN       ?= gpsp
 # Platform specific definitions 
 
 VPATH      += ..
-CFLAGS     += -DPC_BUILD -Wall -m32
+CFLAGS     += -DPC_BUILD -Wall -m32 -g
 INCLUDES   = -I${PREFIX}/include `sdl-config --cflags`
 LIBS       = -L${PREFIX}/lib `sdl-config --libs` -lz -m32 -lpng
 

@@ -4,10 +4,10 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/opt/miyoo/arm-buildroot-linux-musleabi/sysroot/usr/include",
-                "/opt/miyoo/arm-buildroot-linux-musleabi/sysroot/usr/include/SDL"
+                "/usr/include",
+                "/usr/include/SDL"
             ],
-            "defines": ["ARM_ARCH","PC_BUILD","BITTBOY"],
+            "defines": ["PC_BUILD"],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c11",
             "cppStandard": "c++17",
