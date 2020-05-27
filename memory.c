@@ -2114,7 +2114,7 @@ s32 load_game_config(char *gamepak_title, char *gamepak_code, char *gamepak_make
   }
 
 #ifndef PSP_BUILD
-  printf("game config missing\n");
+  printf("game config missing:%s,%s,%s\n",gamepak_title,gamepak_code,gamepak_maker);
 #endif
   return -1;
 }
